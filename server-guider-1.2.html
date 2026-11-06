@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Server Builder Guider — a walk-through for lighting a small home server</title>
+<style>
+:root{
+  --bg:#10131C; --panel:rgba(27,33,48,.60); --panel2:rgba(35,43,63,.66); --deep:rgba(11,14,20,.88); --line:#39415A;
+  --text:#E8E6DF; --dim:#C3C8D4; --accent:#E8A33D; --accent2:#7FA8D9; --flag:#D96A5A; --link:#7FA8D9;
+  --on-accent:#10131C; --mote1:232,163,61; --mote2:127,168,217;
+}
+:root[data-scheme="plankton"]{
+  --bg:#041E26; --panel:rgba(7,48,60,.60); --panel2:rgba(13,66,83,.66); --deep:rgba(2,20,26,.88); --line:#2E6070;
+  --text:#EAFBF3; --dim:#B9D8CE; --accent:#57E6B8; --accent2:#FF9E7A; --flag:#FF6B6B; --link:#7AD9E8;
+  --on-accent:#04241C; --mote1:87,230,184; --mote2:255,158,122;
+}
+:root[data-scheme="jellyfish"]{
+  --bg:#1E0F22; --panel:rgba(44,23,51,.60); --panel2:rgba(58,32,66,.66); --deep:rgba(20,10,24,.88); --line:#5A3A66;
+  --text:#FBEFF7; --dim:#D8BDD6; --accent:#FF7AC1; --accent2:#57E6E6; --flag:#FF5252; --link:#57E6E6;
+  --on-accent:#2A0A1E; --mote1:255,122,193; --mote2:87,230,230;
+}
+:root[data-scheme="pond"]{
+  --bg:#0C1A10; --panel:rgba(20,41,27,.60); --panel2:rgba(28,54,36,.66); --deep:rgba(7,16,9,.88); --line:#35543F;
+  --text:#F2EAD8; --dim:#C9BFA3; --accent:#B8E356; --accent2:#FFAA5A; --flag:#FF9E57; --link:#86D1A8;
+  --on-accent:#16260A; --mote1:184,227,86; --mote2:242,234,216;
+}
+:root[data-scheme="bubble"]{
+  --bg:#0A1428; --panel:rgba(19,38,63,.60); --panel2:rgba(27,51,83,.66); --deep:rgba(5,11,24,.88); --line:#33507A;
+  --text:#EDF4FC; --dim:#B9CDE3; --accent:#8FC1E9; --accent2:#FFB38A; --flag:#FF6B6B; --link:#FFC09A;
+  --on-accent:#0A1E33; --mote1:143,193,233; --mote2:255,179,138;
+}
+:root[data-scheme="klingon"]{
+  --bg:#15090B; --panel:rgba(42,17,20,.60); --panel2:rgba(56,24,28,.66); --deep:rgba(13,5,7,.88); --line:#6B3A3E;
+  --text:#EDE4D3; --dim:#C9B8A0; --accent:#E05A61; --accent2:#B08D57; --flag:#E8A33D; --link:#C6A15B;
+  --on-accent:#1A0508; --mote1:224,90,97; --mote2:198,161,91;
+}
+*{box-sizing:border-box}
+html{font-size:19px}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;line-height:1.55}
+#motes{position:fixed;inset:0;z-index:0;pointer-events:none}
+header,main,footer{position:relative;z-index:1}
+header{border-bottom:2px solid var(--line);background:var(--panel);padding:18px 22px 14px}
+header h1{margin:0;font-size:1.65rem;letter-spacing:.04em;color:var(--accent)}
+header .sub{margin:4px 0 0;color:var(--dim);font-size:1rem;max-width:62ch}
+nav.top{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:2px solid var(--line);
+  background:var(--panel2);color:var(--text);padding:9px 16px}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
+button.primary:disabled{background:var(--panel2);border-color:var(--line);color:var(--dim);cursor:not-allowed;font-weight:400}
+button.ghost{background:transparent}
+button.small{padding:5px 12px;font-size:.9rem}
+button.danger{border-color:var(--flag);color:var(--flag)}
+a{color:var(--link)}
+main{max-width:1060px;margin:0 auto;padding:22px 18px 60px}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:20px 22px;margin:0 0 18px}
+.card h2{margin-top:0;color:var(--accent);font-size:1.35rem}
+.card h3{color:var(--accent)}
+.badge{display:inline-block;border:2px solid var(--accent);color:var(--accent);
+  border-radius:999px;padding:2px 12px;font-size:.85rem;font-weight:700;letter-spacing:.05em}
+.badge.dim{border-color:var(--line);color:var(--dim)}
+.kicker{color:var(--dim);text-transform:uppercase;letter-spacing:.12em;font-size:.8rem;margin:0 0 4px}
+.beat{border-left:5px solid var(--line);padding:4px 0 4px 16px;margin:18px 0}
+.beat.prepare{border-color:var(--link)}
+.beat.press{border-color:var(--accent)}
+.beat.right{border-color:var(--dim)}
+.beat.knock{border-color:var(--accent);background:var(--panel2);border-radius:0 10px 10px 0;padding:12px 16px}
+.beat h3{margin:0 0 6px;font-size:1.05rem;letter-spacing:.06em}
+.beat.press h3{color:var(--accent)}
+.beat p{margin:6px 0}
+.block{background:var(--deep);border:2px solid var(--line);border-radius:10px;margin:12px 0;overflow:hidden}
+.block .bhead{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  background:var(--panel2);padding:6px 12px;font-size:.85rem;color:var(--dim)}
+.block pre{margin:0;padding:14px 16px;overflow-x:auto;font-size:1rem;color:var(--text);
+  font-family:Consolas,"Cascadia Mono",monospace;white-space:pre-wrap;word-break:break-word}
+.block .shell{font-weight:700;color:var(--accent)}
+.copybtn{flex:none}
+.face{background:var(--deep);border:2px dashed var(--line);border-radius:10px;padding:14px 18px;margin:12px 0;
+  font-family:Consolas,"Cascadia Mono",monospace;font-size:.98rem;white-space:pre-wrap;word-break:break-word}
+.face .ttl{color:var(--accent);font-weight:700}
+label.opt{display:block;background:var(--panel2);border:2px solid var(--line);border-radius:10px;
+  padding:12px 16px;margin:10px 0;cursor:pointer}
+label.opt:hover{border-color:var(--link)}
+label.opt input{margin-right:10px;transform:scale(1.3);vertical-align:middle}
+label.opt.sel{border-color:var(--accent)}
+input[type=text]{font:inherit;background:var(--deep);color:var(--text);border:2px solid var(--line);
+  border-radius:8px;padding:9px 12px;width:100%;max-width:520px}
+input[type=text]:focus{border-color:var(--accent);outline:none}
+textarea{font:inherit;background:var(--deep);color:var(--text);border:2px solid var(--line);
+  border-radius:8px;padding:10px 12px;width:100%;min-height:90px}
+select{font:inherit;background:var(--deep);color:var(--text);border:2px solid var(--line);border-radius:8px;padding:9px 12px}
+.warn{border:2px solid var(--flag);border-radius:10px;padding:14px 18px;margin:14px 0;background:var(--panel)}
+.warn h3{color:var(--flag);margin-top:0}
+.stop{border:3px solid var(--flag);border-radius:12px;padding:18px 20px;margin:16px 0}
+.stop h3{color:var(--flag);margin-top:0}
+.good{border:2px solid var(--accent);border-radius:10px;padding:14px 18px;margin:14px 0}
+.good h3{color:var(--accent);margin-top:0}
+.rail{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 20px}
+.rail button{padding:6px 11px;font-size:.86rem;border-radius:999px}
+.rail button.cur{border-color:var(--accent);color:var(--accent);font-weight:700}
+.rail button.done{border-color:var(--accent)}
+.rail button.lock{opacity:.45;cursor:not-allowed}
+.acttabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.acttabs button{border-radius:999px;padding:8px 15px;font-size:.92rem}
+.acttabs button.cur{border-color:var(--accent);color:var(--accent);font-weight:700}
+.acttabs button.done{border-color:var(--accent)}
+.acttabs button.lock{opacity:.5}
+.schemebar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:10px}
+.schemebar .schemelabel{color:var(--dim);font-size:.9rem;margin-right:2px}
+.schemebar button{padding:5px 12px;font-size:.88rem;border-radius:999px}
+.schemebar button.cur{border-color:var(--accent);color:var(--accent);font-weight:700}
+.stageNav{display:flex;justify-content:space-between;gap:12px;margin-top:24px;flex-wrap:wrap}
+.rline{border-left:5px solid var(--accent);background:var(--panel2);border-radius:0 8px 8px 0;
+  padding:10px 16px;margin:12px 0}
+.rline .rl-t{font-size:.8rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+table.receipt{width:100%;border-collapse:collapse}
+table.receipt td{border-bottom:1px solid var(--line);padding:9px 8px;vertical-align:top}
+table.receipt td.k{color:var(--dim);width:34%}
+ul.tight li{margin:5px 0}
+.ambushTag{color:var(--flag);font-weight:700}
+footer{border-top:2px solid var(--line);background:var(--panel);padding:16px 22px;color:var(--dim);font-size:.92rem}
+footer .stamp{border:2px dashed var(--line);border-radius:8px;display:inline-block;padding:6px 14px;margin-bottom:8px}
+.small{font-size:.9rem;color:var(--dim)}
+.big{font-size:1.15rem}
+.pace{color:var(--dim);font-size:.95rem;margin:2px 0 4px}
+.calm{border:2px solid var(--link);border-radius:10px;padding:12px 16px;margin:16px 0 4px;background:var(--panel2)}
+.calm h3{color:var(--link);margin-top:0;font-size:.98rem;letter-spacing:.06em}
+.chunk{font-family:Consolas,monospace;font-size:1.25rem;letter-spacing:.06em;color:var(--accent)}
+details{background:var(--panel2);border:2px solid var(--line);border-radius:10px;padding:10px 16px;margin:12px 0}
+details summary{cursor:pointer;font-weight:700;color:var(--accent)}
+@media print{
+  body{background:#fff;color:#000;font-size:12pt}
+  header,footer,#motes,.rail,.stageNav,.noprint{display:none !important}
+  main{max-width:none;padding:0}
+  .card,.rline,.block,.face,label.opt,details,.calm,.warn,.good,.beat.knock{border:1px solid #000;background:#fff;color:#000}
+  .block .bhead{background:#fff;color:#000}
+  .block pre,.face{color:#000}
+  .card h2,.card h3{color:#000}
+  table.receipt td{border-bottom:1px solid #000}
+  table.receipt td.k{color:#000}
+}
+</style>
+</head>
+<body>
+<canvas id="motes" width="0" height="0"></canvas>
+<header>
+  <h1>SERVER BUILDER GUIDER</h1>
+  <p class="sub">A walk-through that stands up a small home server on a plain Windows PC — with <strong>your</strong> hands. It prepares everything, points at the exact press, shows you what right looks like, and proves each step before moving on. It never runs the server. It never presses anything. Three acts: light the house, walk the sidewalk, keep the street door.</p>
+  <nav class="top noprint">
+    <button data-nav="home">Home</button>
+    <button data-nav="walk">The Walk</button>
+    <button data-nav="catalog">Ambush Doors</button>
+    <button data-nav="unwalked">What It Doesn&rsquo;t Cover</button>
+    <button data-nav="receipt">Run Receipt</button>
+    <button data-nav="past">Past Receipts</button>
+    <button id="motesBtn" class="ghost" data-motes="1">Sparkle motes: OFF</button>
+  </nav>
+  <div class="schemebar noprint" role="group" aria-label="Colour scheme">
+    <span class="schemelabel">Colour scheme:</span>
+    <button data-scheme="house">House Gold</button>
+    <button data-scheme="plankton">Plankton</button>
+    <button data-scheme="jellyfish">Jellyfish</button>
+    <button data-scheme="pond">Pond Lantern</button>
+    <button data-scheme="bubble">Bubble Bath</button>
+    <button data-scheme="klingon">Klingon</button>
+    <button id="breakerBtn" data-breaker="1" hidden>Code breaker: translate</button>
+  </div>
+  <p id="glyphNote" class="sub" hidden>Klingon is a visual joke &mdash; the guide is shown in Klingon-style glyphs, but the words underneath are the same English, and every press works the same. The code breaker translates.</p>
+</header>
+<main id="app"></main>
+<footer>
+  <span class="stamp">Registered to: &mdash;&mdash;&mdash; (a bought copy carries its buyer&rsquo;s stamp here; the stamp is applied at release)</span><br>
+  This guide never asks for, holds, or reads your password or operator key. It prepares and points — every press is yours. &middot; Guider version 1.2.
+</footer>
+<script>
+"use strict";
+/* ============ RECIPE — the one WALKED recipe, as data ============ */
+var RECIPE = {
+  serverName: "Deer Getter porch server",
+  packageLine: "Deer Getter porch server v1.0",
+  zipName: "deer-getter-server-1.0.zip",
+  zipSize: "9,601 bytes (about 9.4 KB)",
+  folderName: "deer-getter-server",
+  configFile: "config.json",
+  keyField: "ops_key",
+  starterKey: "porch-key-change-me",
+  startScript: "start-server.bat",
+  readmeName: "README.txt",
+  port: 8791,
+  boardPath: "/",
+  opsPath: "/ops",
+  ruleName: "Deer Getter Porch",
+  walkedDate: "2026-11-04",
+  banner: [
+    "Starting the Deer Getter porch server...",
+    "Keep this window open while the board is live. Close it to stop.",
+    "Deer Getter porch server on port 8791",
+    "Board:  http://localhost:8791/",
+    "Ops:    http://localhost:8791/ops",
+    "Ctrl+C stops the board."
+  ],
+  okAnswer: '{"ok": true}',
+  errAnswer: '{"error": "operator key required"}'
+};
+/* ============ PASTE BLOCKS — exact strings, copy-buttoned ============ */
+var CODES = {
+  pythonCheck: "python --version",
+  profileRead: "Get-NetConnectionProfile | Format-List InterfaceAlias, NetworkCategory",
+  ipcfg: 'ipconfig | findstr /i "IPv4"',
+  profileFlip: "Get-NetConnectionProfile | Set-NetConnectionProfile -NetworkCategory Private",
+  fwMake: 'New-NetFirewallRule -DisplayName "Deer Getter Porch" -Direction Inbound -Protocol TCP -LocalPort 8791 -Profile Private -Action Allow',
+  fwRead: 'Get-NetFirewallRule -DisplayName "Deer Getter Porch" | Get-NetFirewallPortFilter',
+  netstat: "netstat -ano | findstr 8791",
+  funnel: "tailscale funnel 8791",
+  tailStatus: "tailscale status",
+  pyInstall313: "py install 3.13",
+  py313Version: "py -3.13 --version"
+};
+function curlBlock(){ return "curl.exe http://" + (S.facts.street || "<street address>") + ":" + RECIPE.port + "/"; }
+function pingBlock(){ return "ping " + (S.facts.phoneIp || "<phone address>"); }
+/* ============ STATE ============ */
+var LSKEY = "serverGuider.walk.v12";
+var LSARCH = "serverGuider.archive.v12";
+var S = null;
+function blankState(){
+  return { started:false, current:1, done:{}, receipts:{}, stopped:null, finished:false, archivedId:null,
+    facts:{ pyAnswer:"", pythonVer:"", detourDone:false, alias:"", profileFound:"",
+      folder:"", seenBat:false, seenCfg:false, seenReadme:false,
+      keyGone:false, keySaved:false,
+      bannerPort:false, bannerAddr:false, bannerClean:false,
+      boardSeen:"", opsAnswer:"", street:"", streetReadBack:false,
+      profileLeft:"", flipSeen:false, fwRoute:"paste", fwA:false, fwB:false, fwC:false,
+      streetKnock:"", phoneSeen:"", phoneBrowser:"", phonePerm:"", phoneIp:"",
+      ordersRead:false, watch:"" },
+    act2:{ started:false, current:1, done:{}, receipts:{}, finished:false,
+      facts:{ preLocal:false, preKey:false, preFolder:false,
+        acctMade:"", acctSigned:"", funnelAnswer:"", pubAddr:"",
+        eyeHave:"", eyeSmoke:"", eyeSeg:false,
+        addrSeg:false, trustSeg:false, validOk:false, appLink:"", appUrl:"", appSeg:false, bannerRead:false,
+        streetTest:"" } },
+    act3:{ closed:false, facts:{ batSaved:false, relightProven:false, watch3:"" } } };
+}
+function load(){
+  try{ var raw = localStorage.getItem(LSKEY); if(raw){ S = JSON.parse(raw); backfill(); return; } }catch(e){}
+  S = blankState();
+}
+function backfill(){
+  var b = blankState();
+  if(!S.act2) S.act2 = b.act2;
+  if(!S.act3) S.act3 = b.act3;
+  var k;
+  for(k in b.act2.facts){ if(S.act2.facts[k]===undefined) S.act2.facts[k] = b.act2.facts[k]; }
+  for(k in b.act3.facts){ if(S.act3.facts[k]===undefined) S.act3.facts[k] = b.act3.facts[k]; }
+}
+function save(){ try{ localStorage.setItem(LSKEY, JSON.stringify(S)); }catch(e){} }
+load();
+var ARCH = [];
+function loadArch(){ try{ var raw = localStorage.getItem(LSARCH); if(raw){ var a = JSON.parse(raw); if(a && a.length!==undefined) ARCH = a; } }catch(e){} }
+function saveArch(){ try{ localStorage.setItem(LSARCH, JSON.stringify(ARCH)); }catch(e){} }
+loadArch();
+/* ============ HELPERS ============ */
+var app = document.getElementById("app");
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function block(codeKey, shellNote, codeText){
+  var code = (codeText!=null)? codeText : CODES[codeKey];
+  return '<div class="block"><div class="bhead"><span>PASTE BLOCK &mdash; <span class="shell">'+esc(shellNote)+'</span></span>'+
+    '<button class="small copybtn" data-copy="'+esc(codeKey||"")+'" data-codetext="'+esc(codeText!=null?codeText:"")+'">Copy</button></div>'+
+    '<pre>'+esc(code)+'</pre></div>';
+}
+function face(lines, title){
+  var inner = lines.map(function(l){ return esc(l); }).join("\n");
+  if(title){ inner = inner.replace(esc(title), '<span class="ttl">'+esc(title)+'</span>'); }
+  return '<div class="face">'+inner+'</div>';
+}
+function beat(kind, title, html){
+  return '<div class="beat '+kind+'"><h3>'+title+'</h3>'+html+'</div>';
+}
+function radio(name, value, cur, label){
+  var sel = (cur===value)?" sel":"";
+  return '<label class="opt'+sel+'"><input type="radio" name="'+name+'" value="'+esc(value)+'" data-knock="'+name+'"'+(cur===value?" checked":"")+'> '+label+'</label>';
+}
+function check(id, cur, label){
+  return '<label class="opt'+(cur?" sel":"")+'"><input type="checkbox" data-check="'+id+'"'+(cur?" checked":"")+'> '+label+'</label>';
+}
+function ambushLink(id, text){
+  return '<p><a href="#" data-ambush="'+id+'">'+esc(text||"Open the ambush door for this")+' &rarr;</a></p>';
+}
+var STAGE_TITLES = ["","Look at the Machine","Get the Package on the PC","Your Key First","Light It",
+  "The Kitchen Door","Operator Proof","The Street Address","The Filing","The Firewall Door",
+  "The Street Knock","The Hand","The Standing Orders"];
+var STAGE_PACE = ["",
+  "About 5 minutes &mdash; a little longer if Python needs installing first (that detour adds roughly 5&ndash;10 minutes).",
+  "About 2 minutes.","About 3 minutes.","About 2 minutes.","About 1 minute.","About 3 minutes.",
+  "About 2 minutes.","About 3 minutes.","About 4 minutes.","About 2 minutes.","About 3 minutes.",
+  "About 3 minutes &mdash; then the receipt."];
+var STAGE_CALM = ["",
+  "Nothing in this stage changes anything on your PC &mdash; we only look, and write down what we see. The worst case here is a second look.",
+  "Nothing can break in this stage. The worst case is a piece missing from the folder &mdash; we just extract it again.",
+  "You cannot hurt the server here. The worst case is a mistyped word, and we find out safely at stage 6 &mdash; the fix is one edited line.",
+  "Starting the server installs nothing and changes nothing. If the window looks wrong, we read it together before touching anything.",
+  "This stage only opens a page &mdash; nothing is changed and nothing can break. Worst case, we climb a short ladder and look again.",
+  "The test here is harmless by design: it clears a notice that is not there. It changes nothing whether it passes or refuses.",
+  "We only read an address in this stage &mdash; no settings are touched. A wrong digit gets caught by reading back, not by anything breaking.",
+  "This stage can change one setting &mdash; how Windows files your network &mdash; and we prove the change by reading it back immediately. If your machine will not allow the change, the guide stops honestly instead of forcing anything.",
+  "This stage opens exactly one small door, for your house only &mdash; and we read the door back afterward to prove it is the right one.",
+  "This stage only knocks &mdash; it changes nothing. A failed knock is information, not damage; we climb the ladder and look.",
+  "This stage happens on your phone; nothing on the PC changes. If the board will not load, every check is read-only.",
+  "No presses are left that change anything. This stage is the handover &mdash; how to live with the porch you lit."];
+function rail(){
+  var h = '<div class="rail noprint" role="navigation" aria-label="Stages">';
+  for(var i=1;i<=12;i++){
+    var cls = "", dis = "";
+    if(S.done[i]) cls += " done";
+    if(S.current===i && !S.finished) cls += " cur";
+    if(!canOpen(i) && !S.done[i]) cls += " lock";
+    h += '<button data-stage="'+i+'" class="'+cls.trim()+'"'+dis+'>'+(S.done[i]?"&#10003; ":"")+i+". "+esc(STAGE_TITLES[i])+'</button>';
+  }
+  return h + "</div>";
+}
+function canOpen(i){
+  if(S.done[i]) return true;
+  for(var j=1;j<i;j++){ if(!S.done[j]) return false; }
+  return true;
+}
+function stageNav(n){
+  var can = canAdvance(n);
+  var nextLabel = (n===12) ? "Finish &mdash; see the run receipt" : "Stage closed &mdash; next stage &rarr;";
+  return '<div class="stageNav noprint">'+
+    (n>1? '<button data-stage="'+(n-1)+'">&larr; Back to stage '+(n-1)+'</button>' : '<span></span>')+
+    '<button class="primary" data-next="'+n+'"'+(can?"":" disabled")+'>'+nextLabel+'</button></div>'+
+    (can? "" : '<p class="small">The Next button wakes up when this stage&rsquo;s knock is satisfied. A press is an intention; only a knock is a fact.</p>');
+}
+function stageShell(n, inner){
+  return actTabsHTML(1) + rail() +
+   '<div class="card"><p class="kicker">Act 1 &mdash; The House &middot; Stage '+n+' of 12 &mdash; '+esc(RECIPE.serverName)+'</p>'+
+   '<h2>'+n+". "+esc(STAGE_TITLES[n])+'</h2>'+
+   (STAGE_PACE[n] ? '<p class="pace">'+STAGE_PACE[n]+'</p>' : '') + inner +
+   (STAGE_CALM[n] ? '<div class="calm"><h3>WHAT CANNOT GO WRONG HERE</h3><p style="margin:0">'+STAGE_CALM[n]+'</p></div>' : '') +
+   '</div>'+ stageNav(n) +
+   (S.finished ? '' : '<p class="noprint" style="margin-top:12px"><button class="ghost small" data-reset="1">Start over&hellip;</button> <span class="small">Throw this walk away and begin again (you will get a warning first).</span></p>');
+}
+function refreshNext(n){
+  var b = app.querySelector('[data-next="'+n+'"]');
+  if(b){ b.disabled = !canAdvance(n); }
+}
+/* ============ HOME ============ */
+function renderHome(){
+  var started = S.started, doneCount = Object.keys(S.done).length;
+  var h = actTabsHTML(1) + '<div class="card"><h2>Lighting a porch, with your own hands</h2>'+
+  '<p>This guide walks you through standing up a small home server on an ordinary Windows PC &mdash; and then walking it out to the street: three acts, one gate each. Every stage runs the same four beats &mdash; the guide <strong>prepares</strong>, points at the one <strong>press</strong> that is yours, shows you <strong>what right looks like</strong> before you press, and then <strong>knocks</strong>: a check that proves the gate actually opened. Nothing counts as done because a button was pressed.</p>'+
+  '<p>At the end you get a one-page <strong>run receipt</strong>: what was found, what was left, and anything worth watching &mdash; in plain words.</p></div>';
+  h += actMapHTML();
+  h += '<div class="card"><p class="kicker">Read this first &mdash; it takes one minute</p><h2>Before you start</h2>'+
+  '<p><strong>What you&rsquo;ll need:</strong></p><ul class="tight">'+
+  '<li><strong>This Windows PC</strong> &mdash; and you able to approve its admin prompts (you are its boss).</li>'+
+  '<li><strong>Your phone</strong>, on your home Wi-Fi.</li>'+
+  '<li><strong>The server package</strong> &mdash; one zip file. Stage 2 names it and gives its exact size.</li>'+
+  '<li><strong>About 40 minutes</strong> for Act 1 at an easy pace. You can stop after any stage; the guide keeps your place on this machine.</li><li><strong>For Act 2</strong> (the sidewalk): about twenty more minutes, your phone with mobile data, and one free account you make in your own name.</li></ul>'+
+  '<p><strong>What you will NOT need:</strong></p><ul class="tight">'+
+  '<li><strong>Experience.</strong> This walk was written for a first-timer. Every step shows you what right looks like <em>before</em> you press anything.</li>'+
+  '<li><strong>Accounts.</strong> None in Act 1. Act 2 &mdash; the sidewalk &mdash; asks you to make exactly one: a free tunnel account in your own name, on the tunnel service&rsquo;s own pages. This guide never sees it, holds it, or types into it.</li>'+
+  '<li><strong>Money.</strong> Nothing in this walk buys anything.</li>'+
+  '<li><strong>Typing skill.</strong> Every command is copy-and-paste. The only thing you ever type is your own key word &mdash; and that goes into the server&rsquo;s own pages, never into this guide.</li></ul>'+
+  '<p>And the standing promise: <strong>this guide changes nothing itself.</strong> It prepares and points; every press is yours, and every press is checked before the walk moves on. If a check fails, the guide stops and explains &mdash; it never guesses.</p></div>';
+
+  h += '<div class="card"><p class="kicker">The recipe this guide teaches</p><h2>'+esc(RECIPE.serverName)+'</h2>'+
+  '<p><span class="badge">WALKED</span> <span class="small">Walked end to end on a real machine, '+esc(RECIPE.walkedDate)+', with the run receipt behind it.</span></p>'+
+  '<p class="small">This guide teaches a class of small servers &mdash; one folder, one config key, one start script, one numbered door (a &ldquo;port&rdquo;) &mdash; through written recipes. Only recipes that have been walked on a real machine are offered. This is the one walked recipe there is. Unwalked recipes are not listed, hinted at, or sold.</p></div>';
+
+  h += '<div class="card"><h2>What this guide never does</h2><ul class="tight">'+
+  '<li><strong>It never asks for, holds, types, stores, or sends any password or operator key.</strong> Your key is typed by you, into the server&rsquo;s own config file and the server&rsquo;s own page, and nowhere else. There is no key-shaped box anywhere in this guide.</li>'+
+  '<li><strong>It never executes anything.</strong> No firewall rules, no settings changes, no edits &mdash; the guide composes each command as a complete paste-ready block, and your paste is the act.</li>'+
+  '<li><strong>It never touches your router, modem, or any network gear.</strong> Its whole territory is one PC, one phone, and the wire between them.</li>'+
+  '<li><strong>It never phones home.</strong> No accounts, no dashboard, no reporting. It is a teacher that lives on your machine.</li>'+
+  '<li><strong>It never improvises past a failed check.</strong> A failed gate leads to the Ambush Doors or to an honest stop &mdash; never to a guessed fix.</li></ul></div>';
+
+  h += '<div class="card"><h2>The walk</h2>';
+  if(S.finished){
+    h += '<p>Your walk is complete &mdash; all twelve stages closed. The run receipt holds the whole story.</p>'+
+    '<p class="noprint"><button class="primary" data-nav="receipt">See the run receipt</button> <button data-stage="'+S.current+'">Revisit a stage</button> <button data-buildanother="1">Build another server</button> <button data-act="2">Act 2 &mdash; The Sidewalk &rarr;</button></p>';
+  } else if(started){
+    h += '<p>You are on <strong>stage '+S.current+' of 12</strong> ('+doneCount+' closed). The guide kept your place on this machine &mdash; pick up exactly where you left off.</p>'+
+    '<p class="noprint"><button class="primary" data-stage="'+S.current+'">Resume the walk &rarr;</button></p>';
+  } else {
+    h += '<p>About forty minutes at a careful pace &mdash; that is what the walked run took, ambushes included. You can stop after any stage; the guide keeps your place on this machine.</p>'+
+    '<p class="noprint"><button class="primary" data-stage="1">Begin stage 1 &rarr;</button></p>';
+  }
+  if(S.stopped && !S.finished){
+    h += '<p class="noprint"><button data-buildanother="1">Build another server</button> <span class="small">This stopped walk&rsquo;s receipt moves to Past Receipts first &mdash; kept, not lost.</span></p>';
+  }
+  if(started){
+    h += '<p class="noprint"><button class="danger small" data-reset="1">Start over (clears the current walk)</button></p>';
+  }
+  h += '</div>';
+
+  h += '<div class="card"><h2>Beside the walk</h2>'+
+  '<p><a href="#" data-nav="catalog">The Ambush Doors</a> &mdash; the six doors a generic guide cannot know: silent successes that look broken, a firewall that never asked, a network filing that vetoes correct rules, the phone&rsquo;s fat permission, a dead server wearing a live one&rsquo;s symptom, and paste discipline. Open them any time; a failed knock will send you to the right one.</p>'+
+  '<p><a href="#" data-nav="unwalked">What this guide doesn&rsquo;t cover</a> &mdash; the honest list, in the open, before anyone relies on it.</p>'+
+  '<p><a href="#" data-nav="past">Past receipts</a> &mdash; receipts of walks you finished and chose to keep. Stored only on this machine; the guide keeps no other copy.</p>'+
+  '<p class="small">Sold as what it is: the teacher, not a dashboard. Dashboards exist for operating a server after it stands. This is the walk that stands it up.</p></div>';
+
+  app.innerHTML = h;
+  window.scrollTo(0,0);
+}
+/* ============ STAGE 1 — LOOK AT THE MACHINE ============ */
+function renderStage1(){
+  var f = S.facts;
+  var inner = '<p>Before anything is taught, the guide looks at the machine it is standing on. Machines differ, and a walk built on a guessed machine falls apart mid-way. Three quick checks &mdash; each is a paste, and each answer gets read, not assumed.</p>';
+  inner += '<p>Open a terminal window: press the <strong>Windows key</strong>, type <strong>powershell</strong>, press <strong>Enter</strong>. No admin needed yet. (A terminal is just a plain text window: you paste a command in, and the PC answers in text &mdash; nothing fancier than that.)</p>';
+
+  inner += beat("prepare","PREPARE",
+    '<p><strong>Check one &mdash; is Python home?</strong> The server is a Python program; Python 3 is its one requirement. We ask the machine, not our hopes: an install chain built on a tool that was never verified fails silently and scrolls away.</p>'+
+    block("pythonCheck","PowerShell or Command Prompt — either window"));
+  inner += beat("press","PRESS HERE",
+    '<p>Paste the block above into the terminal and press Enter. Then read what answered, and tell the guide which it was:</p>'+
+    radio("pyAnswer","version",f.pyAnswer,"A version number answered (for example: <em>Python 3.13.0</em>)")+
+    radio("pyAnswer","norecog",f.pyAnswer,"It said <em>&lsquo;python&rsquo; is not recognized</em> (or words like that)")+
+    radio("pyAnswer","nothing",f.pyAnswer,"Nothing answered at all"));
+
+  if(f.pyAnswer==="version"){
+    inner += '<p><label>Write the version exactly as it answered (for the receipt):<br>'+
+      '<input type="text" data-fact="pythonVer" value="'+esc(f.pythonVer)+'" placeholder="Python 3.13.0"></label></p>';
+  }
+  if((f.pyAnswer==="norecog"||f.pyAnswer==="nothing") && !f.detourDone){
+    inner += '<div class="warn"><h3>The Python detour &mdash; a named road, not a dead end</h3>'+
+    '<p>Python is not on this machine yet. That is fine; it is the server&rsquo;s one requirement and it installs in a few minutes:</p>'+
+    '<ol><li>Go to <strong>python.org</strong> and download the Windows installer. Your clicks, from the official source only.</li>'+
+    '<li>Run it. On the first screen, tick the box <strong>&ldquo;Add python.exe to PATH&rdquo;</strong> &mdash; this tick is the whole ballgame; without it, Windows cannot find Python afterward.</li>'+
+    '<li>Let it finish, then <strong>close the terminal and open a FRESH one</strong>. A window that was already open never sees a new PATH &mdash; &ldquo;not recognized&rdquo; right after an install is answered by a fresh window, not by a reinstall.</li>'+
+    '<li>In the fresh window, paste the Python check again.</li></ol>'+
+    '<p><button class="primary" data-detour="1">I installed Python and re-ran the check in a fresh window</button></p></div>';
+  }
+
+  inner += beat("prepare","PREPARE &mdash; CHECKS TWO AND THREE",
+    '<p><strong>Check two &mdash; the connection&rsquo;s name</strong>, and <strong>check three &mdash; how Windows has this network filed</strong> (Public or Private &mdash; Windows sorts every network into &ldquo;coffee shop&rdquo; or &ldquo;my house&rdquo;; stage 8 explains why it matters). Both answers ride on one read. The filing matters later, at the firewall door &mdash; we read it now so it is a fact, not a surprise.</p>'+
+    block("profileRead","PowerShell"));
+  inner += '<p><label>Which connection name did it print (InterfaceAlias)?<br>'+
+    '<input type="text" data-fact="alias" value="'+esc(f.alias)+'" placeholder="Ethernet (or Wi-Fi)"></label></p>'+
+    '<p>And how is the network filed (NetworkCategory)?</p>'+
+    radio("profileFound","Private",f.profileFound,"Private")+
+    radio("profileFound","Public",f.profileFound,"Public");
+
+  inner += beat("knock","THE KNOCK",
+    '<p>The guide reads answers, not effort. This stage closes when: Python answered with a version (and you wrote it above), and the filing read printed a name and a category that you&rsquo;ve entered. If Python stayed silent even after the detour, stop here and sort Python first &mdash; no later stage can stand on an unread answer.</p>');
+  return stageShell(1, inner);
+}
+/* ============ STAGE 2 — GET THE PACKAGE ON THE PC ============ */
+function renderStage2(){
+  var f = S.facts;
+  var inner = '<p>The server arrives as <strong>one file</strong> &mdash; everything inside a single folder, nothing scattered. The guide states its size up front, so a half-finished download shows itself immediately.</p>';
+  inner += beat("prepare","PREPARE",
+    '<p>The package: <strong>'+esc(RECIPE.zipName)+'</strong>, size <strong>'+esc(RECIPE.zipSize)+'</strong>. If the file you have is a different size, it is not the whole file &mdash; fetch it again before going on.</p>');
+  inner += beat("press","PRESS HERE",
+    '<p>Extract the zip wherever you like &mdash; the Desktop is fine. One folder comes out: <strong>'+esc(RECIPE.folderName)+'</strong>. Everything the server is lives inside it.</p>'+
+    '<p><label>Where did the folder land? (full path, for the receipt)<br>'+
+    '<input type="text" data-fact="folder" value="'+esc(f.folder)+'" placeholder="C:\\Users\\you\\Desktop\\'+esc(RECIPE.folderName)+'"></label></p>');
+  inner += beat("right","WHAT RIGHT LOOKS LIKE",
+    '<p>Open the folder. The guide names the pieces <em>before</em> you look, so a missing one is visible at once:</p><ul class="tight">'+
+    '<li><strong>'+esc(RECIPE.startScript)+'</strong> &mdash; the start script you will double-click</li>'+
+    '<li><strong>'+esc(RECIPE.configFile)+'</strong> &mdash; the config file, home of the operator key</li>'+
+    '<li><strong>'+esc(RECIPE.readmeName)+'</strong> &mdash; the server&rsquo;s own notes</li></ul>');
+  inner += beat("knock","THE KNOCK",
+    '<p>Tick each piece you can actually see in the folder:</p>'+
+    check("seenBat",f.seenBat,esc(RECIPE.startScript)+" is there")+
+    check("seenCfg",f.seenCfg,esc(RECIPE.configFile)+" is there")+
+    check("seenReadme",f.seenReadme,esc(RECIPE.readmeName)+" is there")+
+    '<p class="small">A piece missing = the extract went wrong or the download was short. Extract again from the full-size zip before continuing.</p>');
+  return stageShell(2, inner);
+}
+/* ============ STAGE 3 — YOUR KEY FIRST ============ */
+function renderStage3(){
+  var f = S.facts;
+  var inner = '<p>The order here is law: <strong>the key is swapped before the server ever runs</strong>, so the question &ldquo;is the starter still in there?&rdquo; can never exist.</p>';
+  inner += beat("prepare","PREPARE",
+    '<p>What the key guards: the server&rsquo;s <strong>operator page</strong> &mdash; the board&rsquo;s own controls. The package ships with a starter key, <strong>'+esc(RECIPE.starterKey)+'</strong>, printed right in the config where <em>anyone who has ever held the package can read it</em>. A starter key is a lock whose key is under every doormat in the world. It has to die before the first start.</p>'+
+    '<div class="warn"><h3>About your word</h3><p>You will invent a word of your own and type it into the config file yourself. <strong>You never tell the guide the word.</strong> There is no box in this guide to type it into, and there never will be. The guide will only check <em>that</em> the starter is gone &mdash; never what replaced it.</p></div>');
+  inner += beat("press","PRESS HERE",
+    '<ol><li>Open the folder from stage 2.</li>'+
+    '<li>Right-click <strong>'+esc(RECIPE.configFile)+'</strong> &rarr; <strong>Open with</strong> &rarr; <strong>Notepad</strong>.</li>'+
+    '<li>Find the one line with <strong>&ldquo;'+esc(RECIPE.keyField)+'&rdquo;</strong>. It holds the starter value.</li>'+
+    '<li>Change <em>only the value between the quotes</em> to your own word. Leave the quotes, the name, and every other line exactly as they are.</li>'+
+    '<li>Save (Ctrl+S) and close Notepad.</li></ol>');
+  inner += beat("right","WHAT RIGHT LOOKS LIKE",
+    '<p>The line now holds <em>your</em> word &mdash; seen by your eyes only. The file is saved, same name ('+esc(RECIPE.configFile)+'), same place.</p>');
+  inner += beat("knock","THE KNOCK",
+    '<p>Read the line once more, with your own eyes, and answer for what you saw:</p>'+
+    check("keyGone",f.keyGone,"The value after &ldquo;"+esc(RECIPE.keyField)+"&rdquo; is <strong>no longer</strong> "+esc(RECIPE.starterKey))+
+    check("keySaved",f.keySaved,"The file is saved and closed, same name, same folder")+
+    '<p class="small">This is the guide&rsquo;s only key check, and it is an inequality: <em>changed</em>, never <em>what to</em>. If the starter is still there, this stage does not close &mdash; no start is offered on a starter key.</p>');
+  return stageShell(3, inner);
+}
+/* ============ STAGE 4 — LIGHT IT ============ */
+function renderStage4(){
+  var f = S.facts;
+  var inner = '<p>First start. One expectation first, because it prevents the commonest panic: <strong>a window will open and stay open &mdash; and that window IS the server being alive.</strong> Closing it is not tidying up. Closing it is turning the board off. The banner will name a <strong>port</strong> &mdash; one numbered door that a program listens on; this server&rsquo;s door is <strong>8791</strong>.</p>';
+  inner += beat("press","PRESS HERE",
+    '<p>In the server folder, double-click <strong>'+esc(RECIPE.startScript)+'</strong>.</p>');
+  inner += beat("right","WHAT RIGHT LOOKS LIKE",
+    '<p>The window prints a banner. The guide shows it to you <em>before</em> yours appears, line by line, so you can read yours against it:</p>'+
+    face(RECIPE.banner));
+  inner += '<div class="warn"><h3>If the window instead sits at &ldquo;Press any key to continue&rdquo;</h3>'+
+    '<p>That is not a banner &mdash; it is a corpse. The server died and the start script is holding the body. <strong>Read the text above that line before touching anything: it is the death certificate.</strong> Photograph it if you can.</p>'+
+    ambushLink(5,"Open Ambush 5 — the dead-server ladder")+'</div>';
+  inner += beat("knock","THE KNOCK",
+    '<p>Read your banner against the guide&rsquo;s copy, and tick what is truly there:</p>'+
+    check("bannerPort",f.bannerPort,"The port line is present: &ldquo;"+esc(RECIPE.banner[2])+"&rdquo;")+
+    check("bannerAddr",f.bannerAddr,"Both address lines are present (Board and Ops)")+
+    check("bannerClean",f.bannerClean,"There is no error text above or below the banner"));
+  return stageShell(4, inner);
+}
+/* ============ STAGE 5 — THE KITCHEN DOOR ============ */
+function renderStage5(){
+  var f = S.facts;
+  var inner = '<p>The board has two addresses. The first is the <strong>kitchen door</strong>: <em>localhost</em> &mdash; the same machine talking to itself. It never leaves the house and no firewall stands on it. (The <strong>firewall</strong> is the PC&rsquo;s built-in door guard; it only watches doors that face the network, and stage 9 deals with it properly.) Success here proves the server. It proves nothing about the street yet &mdash; that is a later stage, and no door&rsquo;s success may stand in for another&rsquo;s.</p>';
+  inner += beat("press","PRESS HERE",
+    '<p>On this PC, open your browser to:</p>'+ face(["http://localhost:"+RECIPE.port+RECIPE.boardPath]));
+  inner += beat("right","WHAT RIGHT LOOKS LIKE",
+    '<p>The board&rsquo;s own face &mdash; the guide shows its shape in advance: a dark page, an orange title, and the <strong>correct empty first state</strong>. Empty is success. A brand-new board has no posts, and says so:</p>'+
+    face(["DEER GETTER - the board","","No deer on the board right now."],"DEER GETTER - the board"));
+  inner += beat("knock","THE KNOCK",
+    '<p>What did the browser show?</p>'+
+    radio("boardSeen","seen",f.boardSeen,"The board&rsquo;s page, with its title and the empty-board line")+
+    radio("boardSeen","error",f.boardSeen,"A browser error (cannot reach, refused, timed out)")+
+    (f.boardSeen==="error" ? '<div class="warn"><h3>Stop and diagnose &mdash; do not go on to the phone</h3><p>A live banner with a dead kitchen door means the server itself is in question. Climb the ladder from its first rung: is anything listening at all?</p>'+ambushLink(5,"Open Ambush 5 — the dead-server ladder")+'</div>' : ""));
+  return stageShell(5, inner);
+}
+/* ============ STAGE 6 — OPERATOR PROOF ============ */
+function renderStage6(){
+  var f = S.facts;
+  var inner = '<p>This stage teaches the subtlest lesson of the whole walk, on purpose, before it can bite: <strong>the Refresh button never checks your key.</strong></p>';
+  inner += beat("prepare","PREPARE",
+    '<p>On the operator page, Refresh only re-reads the <strong>public</strong> board state and prints it under the button &mdash; and it already ran once when the page loaded, which is why pressing it again &ldquo;does nothing.&rdquo; Nothing is broken when that happens; the same unchanged text is printed in the same place. (That is Ambush 1, and it catches everyone once.)</p>'+
+    '<p>The key rides <strong>only with the action buttons</strong>, and the server checks it fresh on every single action. Until an action answers, nobody has vouched for your key &mdash; not the page loading, not Refresh responding, nobody.</p>'+
+    '<p>So the proof uses an action that is <strong>harmless by construction</strong>: <strong>Clear notice</strong>, pressed while no notice is up. It clears nothing, changes nothing &mdash; and it passes through the key check, so its answer is the verdict.</p>');
+  inner += beat("press","PRESS HERE",
+    '<ol><li>Open the operator page: </li></ol>'+ face(["http://localhost:"+RECIPE.port+RECIPE.opsPath])+
+    '<ol start="2"><li>In the page&rsquo;s key box, type <strong>your word</strong> &mdash; your fingers, your word, typed into the server&rsquo;s own page and nowhere else.</li>'+
+    '<li>Press <strong>Clear notice</strong>.</li>'+
+    '<li>Read the answer box under the buttons.</li></ol>');
+  inner += beat("right","WHAT RIGHT LOOKS LIKE",
+    '<p>Success wears these exact words:</p>'+ face([RECIPE.okAnswer])+
+    '<p>Refusal wears different words:</p>'+ face([RECIPE.errAnswer]));
+  inner += beat("knock","THE KNOCK",
+    '<p>What did the answer box say?</p>'+
+    radio("opsAnswer","ok",f.opsAnswer,"It said "+esc(RECIPE.okAnswer)+" &mdash; the server saying yes, boss")+
+    radio("opsAnswer","refused",f.opsAnswer,"It said "+esc(RECIPE.errAnswer))+
+    radio("opsAnswer","other",f.opsAnswer,"Something else, or nothing at all")+
+    (f.opsAnswer==="refused" ? '<div class="warn"><h3>The named loop &mdash; no improvising</h3><p>A refusal means the typed word and the config word disagree &mdash; <em>or the starter key still lives in the config</em> (this is the field test that stage 3&rsquo;s swap really happened). The loop is fixed:</p><ol><li>Stop the server: click its window, press Ctrl+C (or close it).</li><li>Re-open '+esc(RECIPE.configFile)+' in Notepad and fix the word.</li><li>Restart by double-clicking '+esc(RECIPE.startScript)+'; check the banner.</li><li>Come back here and run the harmless test again.</li></ol><p><button data-stage="3">Take me back to stage 3 to redo the swap</button></p></div>' : "")+
+    (f.opsAnswer==="other" ? '<div class="warn"><h3>Read it once more</h3><p>Look at the box directly under the action buttons on the operator page &mdash; that is the only answer that counts. If the page itself did not load, the kitchen door has gone quiet: check the server window is still open, then climb the ladder.</p>'+ambushLink(5,"Open Ambush 5 — the dead-server ladder")+'</div>' : ""));
+  return stageShell(6, inner);
+}
+/* ============ STAGE 7 — THE STREET ADDRESS ============ */
+function renderStage7(){
+  var f = S.facts;
+  var inner = '<p>The phone cannot use the kitchen door. It knocks on the board&rsquo;s second address: this PC&rsquo;s address on your home network &mdash; its <strong>street address</strong>.</p>';
+  inner += beat("prepare","PREPARE",
+    '<p>Two facts up front. <strong>One:</strong> the address is fetched by command, never typed from memory and never guessed. <strong>Two:</strong> the address is <strong>rented, not owned</strong> &mdash; your router hands it out automatically and can reassign it (that automatic handing-out is called <strong>DHCP</strong> &mdash; you never have to touch it). If the phone ever stops finding the server, re-run this stage <em>before</em> suspecting the server.</p>'+
+    '<div class="warn"><h3>Use a NEW terminal window</h3><p>Never the server&rsquo;s window. Touching that window is how boards go dark.</p></div>'+
+    block("ipcfg","Command Prompt or PowerShell — a NEW window"));
+  inner += beat("press","PRESS HERE",
+    '<p>Paste the block into the new window. One or more <strong>IPv4 Address</strong> lines answer. The house address is the one in your home network&rsquo;s range &mdash; for most homes it starts <strong>192.168.</strong> (the walked run&rsquo;s was 192.168.1.223; yours will differ). Type the one you read into the box &mdash; the guide does the rest:</p>'+
+    '<p><input type="text" data-fact="street" value="'+esc(f.street)+'" placeholder="192.168.1.223" inputmode="numeric"></p>'+
+    '<div id="streetOut">'+ streetOutHTML() +'</div>');
+  inner += beat("knock","THE KNOCK",
+    check("streetReadBack",f.streetReadBack,"I read the address back digit by digit against the terminal&rsquo;s line")+
+    '<p class="small">The receipt keeps today&rsquo;s address with its warning attached permanently: <em>rented &mdash; re-check before suspecting the server.</em></p>');
+  return stageShell(7, inner);
+}
+function isIPv4(s){ return /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(s||"") && (s||"").split(".").every(function(o){ return +o>=0 && +o<=255; }); }
+function chunkIP(s){ return (s||"").split("").join(" ").replace(/\./g,"·"); }
+function streetOutHTML(){
+  var f = S.facts;
+  if(isIPv4(f.street)){
+    return '<div class="good"><h3>Your phone&rsquo;s address, assembled by the guide</h3><p class="chunk">http://'+esc(f.street)+':'+RECIPE.port+'/</p><p class="small">Spelled in chunks, for typing onto the phone later: <strong>'+esc(chunkIP(f.street))+' &middot; colon &middot; '+RECIPE.port+'</strong>. A perfect address matters &mdash; in the walked run, the one suspected &ldquo;mistype&rdquo; turned out to be no mistype at all: the error page itself quoted the address letter-perfect, and the fault was elsewhere. Read yours digit by digit before blaming your typing.</p></div>';
+  }
+  return '<p class="small">When a complete address is in the box, the guide assembles the phone&rsquo;s full address here and spells it in chunks.</p>';
+}
+/* ============ STAGE 8 — THE FILING ============ */
+function renderStage8(){
+  var f = S.facts;
+  var inner = '<p>This stage is sequenced <strong>before</strong> the firewall door on purpose. The walked run found it after, and paid about fifteen minutes for the order. The guide does not.</p>';
+  inner += beat("prepare","PREPARE",
+    '<p>Windows files every network one of two ways. <strong>Public</strong> is the coffee-shop filing: every door from the network slammed by default. <strong>Private</strong> is your house: doors may open. Neither filing is wrong &mdash; but a firewall rule written for Private <strong>does nothing at all</strong> on a network filed Public, silently, with no error pointing at the filing. A mismatch is invisible until you look. So we look.</p>'+
+    '<p>You need an <strong>admin window</strong> for this stage: a terminal Windows trusts to change settings. Windows will ask &ldquo;do you allow this?&rdquo; &mdash; that is normal, and it is you approving your own press. The one dance, learned once, by rote (it is also Ambush 6): press the <strong>Windows key</strong> &rarr; type <strong>powershell</strong> &rarr; <strong>Ctrl+Shift+Enter</strong> &rarr; <strong>Alt+Y</strong> at the prompt.</p>'+
+    block("profileRead","PowerShell — ADMIN window"));
+  inner += beat("press","PRESS HERE",
+    '<p>Paste the read into the admin window. Two lines answer. What does the read-back say <em>right now</em>?</p>'+
+    radio("profileFound","Private",f.profileFound,"Private &mdash; already filed as my house")+
+    radio("profileFound","Public",f.profileFound,"Public"));
+  if(f.profileFound==="Private" && !f.flipSeen){
+    inner += '<div class="good"><h3>A gate that needs no opening</h3><p>Your network is already filed Private. This stage closes with <strong>no press at all</strong> &mdash; a gate that needs no opening is still verified, and the receipt will say so.</p></div>';
+  }
+  if(f.profileFound==="Public"){
+    inner += beat("press","THE PRESS — FLIP THE FILING",
+      '<p>One paste flips the filing. It fetches its own target &mdash; it flips the connection it finds; there is nothing to fill in:</p>'+
+      block("profileFlip","PowerShell — ADMIN window")+
+      '<p><strong>It will say NOTHING back.</strong> Silence is this command&rsquo;s success sound &mdash; a whole family of Windows commands is silent on success by design. In the walked run the owner pasted it three times because silence felt like failure. It had worked the first time. Paste it <em>once</em>, then prove it with the read.</p>'+
+      '<p><button class="small" data-flip="1">I pasted the flip once</button></p>');
+  }
+  if(f.profileFound==="Public" && f.flipSeen){
+    inner += beat("knock","THE KNOCK — READ IT AGAIN",
+      '<p>Run the read a second time. The flip is proven by the read-back &mdash; never by the paste having happened.</p>'+
+      block("profileRead","PowerShell — ADMIN window")+
+      '<p>What does the second read say?</p>'+
+      radio("profileLeft","Private",f.profileLeft,"Private now")+
+      radio("profileLeft","Public",f.profileLeft,"Still Public"));
+  }
+  if(f.profileFound==="Private"){ /* closing handled by knock below */ }
+  inner += beat("knock","THE KNOCK",
+    '<p>This stage closes when the filing stands at <strong>Private</strong> &mdash; either found that way, or flipped and <em>proven by the second read</em>. What gets written on the receipt is the filing as found <em>and</em> as left.</p>');
+  if(f.profileLeft==="Public" && f.flipSeen){
+    inner += '<div class="stop"><h3>An honest stop</h3>'+
+    '<p>The read-back still says <strong>Public</strong> after the flip. On some machines the filing is locked by policy &mdash; set by an employer, a school, or security software &mdash; and it is <strong>not the owner&rsquo;s to change</strong>.</p>'+
+    '<p>The walk cannot proceed past this door on this PC, and the guide will not improvise around it. A stopped walk with a true reason is a successful use of this guide. Your receipt so far is kept, with this stop written on it.</p>'+
+    '<p><button class="primary" data-stopwalk="1">End the walk here and see the receipt</button> <button data-stage="8">Read it once more first</button></p></div>';
+  }
+  return stageShell(8, inner);
+}
+/* ============ STAGE 9 — THE FIREWALL DOOR ============ */
+function renderStage9(){
+  var f = S.facts;
+  var inner = '<p>Now the deliberate answer to a question Windows may never have asked.</p>';
+  inner += beat("prepare","PREPARE",
+    '<p>What is being opened, in plain words, before any paste: <strong>exactly one numbered door</strong> &mdash; port '+RECIPE.port+' &mdash; <strong>inbound</strong>, on <strong>Private networks only</strong>. (&ldquo;Inbound&rdquo; means calls coming <em>into</em> this PC from inside your house.) Not the router. Not the internet. The outside world still sees nothing; the house gains one door.</p>'+
+    '<p>Why this stage exists at all: when a program first listens, Windows <em>usually</em> asks &ldquo;allow it?&rdquo; &mdash; but the prompt may never appear, or appear behind other windows, or be dismissed unseen. Then the program was never answered for, and the firewall treats silence as <em>no</em>. That is Ambush 2, and it is why the board can load instantly on the PC itself &mdash; the localhost door is never guarded &mdash; while the phone gets nothing. This stage answers deliberately instead of hoping the question was asked.</p>'+
+    '<p>Two owner routes; pick either. Both end at the same knock.</p>'+
+    '<p><button data-fwroute="click" class="'+(f.fwRoute==="click"?"primary":"")+'">Route A &mdash; the click route</button> '+
+    '<button data-fwroute="paste" class="'+(f.fwRoute==="paste"?"primary":"")+'">Route B &mdash; the paste route</button></p>');
+  if(f.fwRoute==="click"){
+    inner += beat("press","PRESS HERE — THE CLICK ROUTE",
+      '<ol><li>Press the Windows key and type: <strong>allow an app through firewall</strong>. Open that settings page.</li>'+
+      '<li>Click <strong>Change settings</strong> (approve the admin prompt).</li>'+
+      '<li>Find the server&rsquo;s program in the list: <strong>Python</strong>.</li>'+
+      '<li>Tick <strong>ONLY the Private box</strong> on its row. Leave Public unticked.</li>'+
+      '<li>Click <strong>OK</strong>.</li></ol>'+
+      '<p class="small">For the knock below you will still use the read-back block &mdash; reading the rule with its port filter is how the guide proves the door that exists, whichever route built it. If the click route made a rule under a different name, the paste route&rsquo;s read-back may not find it; in that case use the paste route instead &mdash; one named rule, provable.</p>');
+  } else {
+    inner += beat("press","PRESS HERE — THE PASTE ROUTE",
+      '<p>In the <strong>admin</strong> PowerShell window (the dance: Windows key &rarr; powershell &rarr; Ctrl+Shift+Enter &rarr; Alt+Y), paste the rule block. It is composed from the recipe &mdash; rule name, port, profile &mdash; complete, nothing to fill in:</p>'+
+      block("fwMake","PowerShell — ADMIN window")+
+      '<p>What right looks like: the rule&rsquo;s summary answers &mdash; <strong>Enabled: True &middot; Profile: Private &middot; Direction: Inbound &middot; Action: Allow &middot; PrimaryStatus: OK</strong>.</p>');
+  }
+  inner += beat("knock","THE KNOCK — READ THE RULE BACK, WITH ITS PORT FILTER",
+    '<p>A rule that exists is not enough: a rule on the wrong port is a door in the wrong wall. Read the rule back together with the port filter it carries:</p>'+
+    block("fwRead","PowerShell — ADMIN window")+
+    '<p>Tick what the read-back truly shows:</p>'+
+    check("fwA",f.fwA,"The rule &ldquo;"+esc(RECIPE.ruleName)+"&rdquo; exists and is enabled, Private, Inbound, Allow")+
+    check("fwB",f.fwB,"The port filter says <strong>Protocol: TCP</strong>")+
+    check("fwC",f.fwC,"The port filter says <strong>LocalPort: "+RECIPE.port+"</strong> &mdash; the paste was not mangled"));
+  return stageShell(9, inner);
+}
+/* ============ STAGE 10 — THE STREET KNOCK ============ */
+function renderStage10(){
+  var f = S.facts;
+  var inner = '<p>The discipline stage: <strong>before the phone is ever blamed, the PC knocks on its own street address.</strong> If the house cannot reach the porch from its own hallway, the phone never stood a chance.</p>';
+  inner += beat("prepare","PREPARE",
+    '<p>The tool is <strong>curl.exe</strong> &mdash; always with the <em>.exe</em>. Plain <em>curl</em> in PowerShell is a costume: an alias for a different command, and its error dress misleads the read.</p>'+
+    '<p>One more preparation: the <strong>first knock in the first seconds</strong> after a start can fail while the server is still binding its port. In the walked run, the first curl failed and the identical second one poured the page. <strong>One retry is procedure, not hope.</strong> Two identical failures are data.</p>');
+  if(isIPv4(f.street)){
+    inner += beat("press","PRESS HERE",
+      '<p>In a terminal window (not the server&rsquo;s window), paste:</p>'+
+      block(null,"PowerShell or Command Prompt",curlBlock()));
+  } else {
+    inner += '<div class="warn"><h3>This block is built from your stage 7 address</h3><p>The street-knock block is assembled whole from the address you read in stage 7 &mdash; the guide never hands you a block with a blank in it. Finish stage 7 and the complete block appears here.</p><p><button data-stage="7">Go to stage 7</button></p></div>';
+  }
+  inner += beat("right","WHAT RIGHT LOOKS LIKE",
+    '<p>The board&rsquo;s page <strong>pours out as text</strong> &mdash; and the title line is visible in the flow:</p>'+
+    face(["... <title>DEER GETTER - the board</title> ..."],"DEER GETTER - the board")+
+    '<p>In PowerShell the progress chatter may dress itself as a red &ldquo;error&rdquo; (<em>NativeCommandError</em>) <strong>while succeeding</strong>. Read the page text at the end, not the costume at the start &mdash; that is Ambush 1, third costume.</p>');
+  inner += beat("knock","THE KNOCK",
+    '<p>What did the knock do?</p>'+
+    radio("streetKnock","poured",f.streetKnock,"The page poured out and I saw the board&rsquo;s title in the text")+
+    radio("streetKnock","costume",f.streetKnock,"Red &ldquo;error&rdquo; chatter &mdash; but the page text arrived at the end")+
+    radio("streetKnock","failed",f.streetKnock,"&ldquo;Failed to connect / Could not connect to server&rdquo; &mdash; even on the retry")+
+    (f.streetKnock==="failed" ? '<div class="warn"><h3>No answer at the street door</h3><p>Before any new fix is attempted: re-read stages 8 and 9 (filing, then rule), then climb the ladder from its first rung &mdash; netstat asks whether anything is home at all.</p>'+ambushLink(5,"Open Ambush 5 — the dead-server ladder")+'</div>' : ""));
+  return stageShell(10, inner);
+}
+/* ============ STAGE 11 — THE HAND ============ */
+function renderStage11(){
+  var f = S.facts;
+  var inner = '<p>The last door: the board, in your hand.</p>';
+  inner += beat("prepare","PREPARE",
+    '<p><strong>The phone must be on the home Wi-Fi.</strong> The porch answers inside the house only &mdash; by design. (Reaching it from the wider internet is the next act of this guide &mdash; Act 2, The Sidewalk &mdash; and it begins only once this house is lit and proven.)</p>'+
+    '<p><strong>Browser order is deliberate:</strong> try a <strong>DuckDuckGo-class browser first</strong>. In the walked run it reached the board instantly with <strong>no permission granted at all</strong> &mdash; the silent route. Chromium-class browsers (Edge and kin) may demand the phone&rsquo;s <em>nearby-devices permission</em> before they will speak to a house address at all. That permission is fat, and this guide will explain it plainly before you grant anything &mdash; see Ambush 4.</p>');
+  inner += beat("press","PRESS HERE",
+    '<p>On the phone, open:</p>'+
+    (isIPv4(f.street) ? '<p class="chunk">http://'+esc(f.street)+':'+RECIPE.port+'/</p><p class="small">In chunks: <strong>'+esc(chunkIP(f.street))+' &middot; colon &middot; '+RECIPE.port+'</strong></p>'
+      : '<p class="small">Your assembled address appears here once stage 7 is closed.</p>'));
+  inner += beat("right","WHAT RIGHT LOOKS LIKE",
+    '<p>The same board page as stage 5, in your hand &mdash; dark page, orange title, &ldquo;No deer on the board right now.&rdquo; <strong>&ldquo;Immediate load&rdquo; is the expected speed.</strong> A long spin is not loading; it is knocking into silence.</p>');
+  inner += beat("knock","THE KNOCK",
+    '<p>Did the board render on the phone?</p>'+
+    radio("phoneSeen","yes",f.phoneSeen,"Yes &mdash; the board is in my hand")+
+    radio("phoneSeen","perm",f.phoneSeen,"The browser stopped and demanded a nearby-devices permission")+
+    radio("phoneSeen","spin",f.phoneSeen,"It spins, or errors, and never loads")+
+    (f.phoneSeen==="perm" ? '<div class="warn"><h3>Before you grant anything</h3><p>That permission does not merely let the browser knock on one address &mdash; it lets it scan for devices around you wherever you walk. You are entitled to hear that plainly first, and there is a quieter road: try the DuckDuckGo-class browser, which needed no grant at all.</p>'+ambushLink(4,"Open Ambush 4 — the nearby-devices permission")+'</div>' : "")+
+    (f.phoneSeen==="spin" ? '<div class="warn"><h3>Knocking into silence</h3><p>Do not blame the phone yet. On the phone&rsquo;s Wi-Fi details, read its own address: is it in the same range as the PC&rsquo;s ('+(isIPv4(f.street)?esc(f.street.split(".").slice(0,3).join("."))+".x":"same first three groups")+')? A different range can mean a different floor of the house. Then climb the ladder from the PC side.</p>'+ambushLink(5,"Open Ambush 5 — the dead-server ladder")+'</div>' : ""));
+  if(f.phoneSeen==="yes"){
+    inner += '<p><label>Which browser carried it?<br><input type="text" data-fact="phoneBrowser" value="'+esc(f.phoneBrowser)+'" placeholder="DuckDuckGo"></label></p>'+
+    '<p>Was any permission granted on the way? (The receipt records this, so a grant is never left standing unnoticed.)</p>'+
+    radio("phonePerm","none",f.phonePerm,"No permission was granted")+
+    radio("phonePerm","revoked",f.phonePerm,"One was granted for the test &mdash; and I have revoked it (Settings &rarr; Apps &rarr; the browser &rarr; Permissions &rarr; Nearby devices &rarr; off)")+
+    radio("phonePerm","standing",f.phonePerm,"One was granted and is still standing &mdash; write it on the receipt so I remember");
+  }
+  return stageShell(11, inner);
+}
+/* ============ STAGE 12 — THE STANDING ORDERS ============ */
+function renderStage12(){
+  var f = S.facts;
+  var inner = '<p>Not a gate &mdash; the handover. The porch is lit and proven at every door. What remains is knowing how to live with it.</p>';
+  inner += '<div class="card" style="margin:14px 0"><h3>THE WINDOW LAW</h3>'+
+    '<p>The board lives exactly while its window is open on the PC. Close the window (or Ctrl+C) = board dark, everything else forgotten. Restart = double-click <strong>'+esc(RECIPE.startScript)+'</strong> again; the banner is the proof of life, every time.</p></div>';
+  inner += '<div class="card" style="margin:14px 0"><h3>THE WALK-BY BURDEN</h3>'+
+    '<p>The server&rsquo;s automation carries the rest: posts expire and delete themselves; claims lapse on their own. Your whole standing job is: <strong>keep the machine on, keep the window open, walk by occasionally.</strong></p>'+
+    '<p>And one discipline for the bad morning: if the board misbehaves, <strong>read the text above a dead window before touching anything</strong> &mdash; it is the death certificate. In the walked run, the one death left no captured cause because the old window was gone before anyone read it. The next one gets read.</p></div>';
+  inner += '<div class="card" style="margin:14px 0"><h3>THE THREE ADDRESSES</h3><ul class="tight">'+
+    '<li><strong>Kitchen door:</strong> http://localhost:'+RECIPE.port+'/ &mdash; the board, on the PC itself</li>'+
+    '<li><strong>Street address:</strong> '+(isIPv4(f.street)? "http://"+esc(f.street)+":"+RECIPE.port+"/" : "(from stage 7)")+' &mdash; rented, not owned: re-check it before suspecting the server</li>'+
+    '<li><strong>Operator page:</strong> http://localhost:'+RECIPE.port+RECIPE.opsPath+' &mdash; where your key proves itself</li>'+
+    '<li><strong>The config file</strong> lives in the server folder ('+esc(f.folder||RECIPE.folderName)+'). The day the key must change: stop the window &rarr; edit the one value &rarr; restart &rarr; run stage 6&rsquo;s harmless test again.</li></ul></div>';
+  inner += '<div class="card" style="margin:14px 0"><h3>AND THEN &mdash; THE SIDEWALK</h3>'+
+    '<p>Closing this stage writes Act 1&rsquo;s receipt &mdash; and Act 1&rsquo;s receipt is not the end of the road. It is the key that unlocks <strong>Act 2 &mdash; The Sidewalk</strong>: the street door, walked the same way, press by press. Your porch is lit inside the house; the sidewalk comes next.</p>'+
+    '<p class="noprint"><button data-act="2">Look at Act 2 &mdash; The Sidewalk</button></p></div>';
+  inner += beat("knock","BEFORE THE RECEIPT",
+    '<p>Anything odd happen on the way &mdash; a door from the Ambush Catalog, a death, a permission still standing? Write it as a <strong>watch item</strong>. A receipt with a watch item on it is a good receipt; the doctrine is honesty, not tidiness.</p>'+
+    '<p><textarea data-fact="watch" placeholder="Example: server died once mid-run, cause not captured — watch it.">'+esc(f.watch)+'</textarea></p>'+
+    check("ordersRead",f.ordersRead,"I have read the standing orders"));
+  return stageShell(12, inner);
+}
+/* ============ GATING — a press is an intention; only a knock is a fact ============ */
+function canAdvance(n){
+  var f = S.facts;
+  switch(n){
+    case 1: return f.pyAnswer==="version" && f.pythonVer.trim()!=="" && f.alias.trim()!=="" && (f.profileFound==="Private"||f.profileFound==="Public");
+    case 2: return f.folder.trim()!=="" && f.seenBat && f.seenCfg && f.seenReadme;
+    case 3: return f.keyGone && f.keySaved;
+    case 4: return f.bannerPort && f.bannerAddr && f.bannerClean;
+    case 5: return f.boardSeen==="seen";
+    case 6: return f.opsAnswer==="ok";
+    case 7: return isIPv4(f.street) && f.streetReadBack;
+    case 8:
+      if(S.stopped) return false;
+      if(f.profileFound==="Private") return true;
+      if(f.profileFound==="Public") return f.flipSeen && f.profileLeft==="Private";
+      return false;
+    case 9: return f.fwA && f.fwB && f.fwC;
+    case 10: return f.streetKnock==="poured" || f.streetKnock==="costume";
+    case 11: return f.phoneSeen==="yes" && f.phoneBrowser.trim()!=="" && f.phonePerm!=="";
+    case 12: return f.ordersRead;
+  }
+  return false;
+}
+function receiptLine(n){
+  var f = S.facts;
+  switch(n){
+    case 1: return "Machine as found — Python: "+(f.pythonVer||"?").replace(/^Python\s+/i,"")+(f.detourDone?" (installed via the detour; PATH box ticked, fresh window)":"")+
+      "; connection: "+(f.alias||"?")+"; network filing as found: "+(f.profileFound||"?")+".";
+    case 2: return "Package in place — folder: "+(f.folder||"?")+"; start script, config file, and README all seen with my own eyes.";
+    case 3: return "Starter key replaced with the owner's own word (value never read by the guide).";
+    case 4: return "Server started — banner verified: port "+RECIPE.port+" line, Board and Ops address lines, no error text.";
+    case 5: return "Board answering on the machine itself (kitchen door) — correct face, correct empty state.";
+    case 6: return "Operator proof — "+RECIPE.okAnswer+" via the harmless action test (Clear notice).";
+    case 7: return "Street address: "+(f.street||"?")+" (rented — re-check before suspecting the server).";
+    case 8: return "Network filing: found "+(f.profileFound||"?")+" → left "+((f.profileLeft||f.profileFound)||"?")+" (read-back verified).";
+    case 9: return "Firewall — rule \u201C"+RECIPE.ruleName+"\u201D: TCP "+RECIPE.port+", Private, Inbound, Allow — created by the "+(f.fwRoute==="click"?"click":"paste")+" route and read back with its port filter.";
+    case 10: return "Street knock from the PC — board served through its street address (page poured"+(f.streetKnock==="costume"?", red costume and all":"")+").";
+    case 11: return "Phone — board served in "+(f.phoneBrowser||"?")+"; permission granted on the way: "+
+      (f.phonePerm==="none"?"none":(f.phonePerm==="revoked"?"yes — and revoked after the test":"YES — still standing (see watch items)"))+".";
+    case 12: return "Standing orders handed over — window law, walk-by burden, three addresses. Walk complete.";
+  }
+  return "";
+}
+var RECEIPT_TITLES = ["","Machine","Package","Operator key","Server start","Board on machine","Operator proof","Street address","Network filing","Firewall","Street knock","Phone","Standing orders"];
+function closeStage(n){
+  if(n===8 && !S.facts.profileLeft) S.facts.profileLeft = S.facts.profileFound;
+  S.done[n] = true;
+  S.receipts[n] = receiptLine(n);
+  if(n===12){ S.finished = true; }
+  else { S.current = n+1; }
+  save();
+}
+/* ============ AMBUSH CATALOG ============ */
+var AMBUSH_TITLES = ["","The Control That Works While Looking Broken","The Firewall That Never Asked",
+  "The Public-Profile Veto","The Phone's Nearby-Devices Permission","The Dead-Server Ladder","Paste-Ready Command Discipline"];
+function renderCatalog(){
+  var h = '<div class="card"><p class="kicker">Reference — open any time</p><h2>The Ambush Doors</h2>'+
+  '<p>Every door below was hit in the field on '+esc(RECIPE.walkedDate)+', in this porch&rsquo;s first run, on a healthy machine run by a careful owner. A generic guide cannot contain them: they are not in any manual&rsquo;s happy path. They are the difference between a walkthrough and a teacher.</p>';
+  for(var i=1;i<=6;i++){
+    h += '<p><a href="#" data-ambush="'+i+'"><span class="ambushTag">AMBUSH '+i+'</span> — '+esc(AMBUSH_TITLES[i])+'</a></p>';
+  }
+  h += '<p class="small">Each door is written the way the guide carries it: the symptom you see, the cause in plain words, the exact check, and the fix &mdash; which is always a press of yours.</p></div>';
+  app.innerHTML = h; window.scrollTo(0,0);
+}
+function ambushShell(n, inner){
+  return '<p class="noprint"><a href="#" data-nav="catalog">&larr; All six doors</a> &nbsp; <a href="#" data-nav="walk">Back to the walk</a></p>'+
+   '<div class="card"><p class="kicker">Ambush '+n+' of 6</p><h2><span class="ambushTag">AMBUSH '+n+'</span> — '+esc(AMBUSH_TITLES[n])+'</h2>'+inner+'</div>';
+}
+function renderAmbush(n){
+  var h = "";
+  if(n===1){
+    h = '<p><strong>Silent success, in three costumes.</strong> The guide&rsquo;s job on this door is not a fix &mdash; nothing is broken. It is teaching the reading <em>before</em> the moment: <strong>silence is a result; read the read-back.</strong> Every silent act in the walk is paired with a spoken verification: a re-read, an answer box, a poured page. Never judge by animation, sound, or vibes.</p>'+
+    '<h3>Costume (a) — the button that &ldquo;does nothing&rdquo;</h3>'+
+    '<p><strong>Symptom:</strong> on the operator page, you press Refresh and nothing seems to refresh or change. <em>(Field: the owner unsure whether anything was wrong with him or the page.)</em></p>'+
+    '<p><strong>Cause:</strong> nothing IS visibly changing, and nothing is broken. The answer box already filled when the page loaded; Refresh re-reads the same unchanged board and prints the same text in the same place. The page has no animation anywhere, by design. The deeper trap: Refresh never checks the key &mdash; an owner can believe they are &ldquo;signed in&rdquo; because a button responded, when nothing has vouched for them yet. Only an action&rsquo;s answer vouches. That is stage 6.</p>'+
+    '<h3>Costume (b) — the command that answers nothing</h3>'+
+    '<p><strong>Symptom:</strong> a pasted command returns to the prompt printing NOTHING. So you paste it again. And again. <em>(Field: the profile flip ran three times. It had worked the first time; silence felt like failure.)</em></p>'+
+    '<p><strong>Cause:</strong> a whole family of Windows commands (the Set- family) is silent on success BY DESIGN. No output is the success sound. Error wears red text and noise; success wears nothing.</p>'+
+    '<h3>Costume (c) — success dressed as an error</h3>'+
+    '<p><strong>Symptom:</strong> a command&rsquo;s output arrives dressed as an error &mdash; red text, &ldquo;NativeCommandError&rdquo; &mdash; while the thing works. <em>(Field: curl.exe under PowerShell prints its progress to a channel PowerShell displays as error text, on failing AND succeeding runs alike.)</em></p>'+
+    '<p><strong>Cause:</strong> costume, not content. The read is the final page text or the final state &mdash; never the color of the chatter.</p>';
+  }
+  if(n===2){
+    h = '<p><strong>Symptom:</strong> the board loads instantly on the PC itself; the phone, on the same Wi-Fi, with a letter-perfect address, answers <strong>ERR_CONNECTION_ABORTED</strong>. <em>(Field: the first phone attempt.)</em></p>'+
+    '<p><strong>Cause:</strong> two different doors. The machine-local (localhost) door is never guarded by the firewall; the network door always is. When a program first listens, Windows usually asks &ldquo;allow it?&rdquo; &mdash; but the prompt may never appear, or appear behind other windows, or be dismissed unseen &mdash; and then the program was never answered for, which the firewall treats as <em>no</em>. Localhost sailing through is exactly what makes this door invisible: every early check passes, on the one door that proves nothing about the street.</p>'+
+    '<p><strong>The check:</strong> from the PC, knock on its own street address (stage 10). Failure there, with a proven localhost, puts the wall on the PC side &mdash; before the phone is suspected of anything.</p>'+
+    '<p><strong>The fix:</strong> stage 9 &mdash; the deliberate answer: one rule, one port, Private only, created by your clicks or your paste, then READ BACK with its port filter. And note well: this door can be fully fixed and still insufficient &mdash; a perfect rule under a Public filing never fires. That is Ambush 3, and in the field both were real at once.</p>'+
+    '<p><button data-stage="9">Go to stage 9 — the firewall door</button></p>';
+  }
+  if(n===3){
+    h = '<p><strong>Symptom:</strong> a correct firewall rule, verified field by field &mdash; Enabled, Private, Inbound, Allow, port read back exact &mdash; and the phone STILL cannot reach the server. <em>(Field: the run&rsquo;s most confusing stretch.)</em></p>'+
+    '<p><strong>Cause:</strong> the rule was written for Private networks. The PC&rsquo;s network is filed <strong>PUBLIC</strong> &mdash; a category Windows assigns to new networks by default, sight unseen. A Private rule on a Public network is a law in a country it doesn&rsquo;t govern: it never fires, silently, with no error anywhere pointing at the filing.</p>'+
+    '<p><strong>The check:</strong> two lines:</p>'+ block("profileRead","PowerShell")+
+    '<p><em>(In the field, the owner answered the whole mystery with one word: &ldquo;public.&rdquo;)</em></p>'+
+    '<p><strong>The fix:</strong> stage 8 &mdash; the flip, one paste that fetches its own target, then THE READ-BACK. Never the paste alone. The guide also writes the found-filing on your receipt, because a network that gets re-filed (a router change can re-file a &ldquo;new&rdquo; network as Public again) will present this exact symptom on some future morning &mdash; and the receipt will already contain the answer.</p>'+
+    '<p><button data-stage="8">Go to stage 8 — the filing</button></p>';
+  }
+  if(n===4){
+    h = '<p><strong>Symptom:</strong> a Chromium-class phone browser (Edge and kin) refuses with <strong>ERR_LOCAL_NETWORK_PERMISSION_MISSING</strong> and throws a system dialog: &ldquo;Allow this browser to find, connect to, and determine the relative position of nearby devices?&rdquo;</p>'+
+    '<p><strong>Cause, stated honestly:</strong> the permission is FAT. It does not merely let the browser knock on one known address &mdash; it lets it <em>scan for and discover devices around you wherever you walk</em>, in effect announcing &ldquo;we are here&rdquo; to the room. Browsers are handed the fat permission because a browser cannot know a site&rsquo;s intent. You are entitled to hear that plainly BEFORE granting anything, in a guide whose whole promise is no quiet grabs.</p>'+
+    '<p><strong>The check:</strong> do you even need this browser for the test? In the field, the answer was NO.</p>'+
+    '<h3>The fix, in the guide&rsquo;s order</h3>'+
+    '<p><strong>1. The silent route first.</strong> A DuckDuckGo-class browser reached the board instantly with NO permission granted. Try the quiet browser before signing anything.</p>'+
+    '<p><strong>2. Grant-for-the-test, revoke-after.</strong> If the permission is granted for a test, it is a switch, not a tattoo: <strong>Settings &rarr; Apps &rarr; (the browser) &rarr; Permissions &rarr; Nearby devices &rarr; off</strong>, the moment the test ends. The revoke path rides in the same breath as the grant, and your run receipt records whether a grant is still standing.</p>'+
+    '<p><strong>3. The standing facts, for peace of mind.</strong> A purpose-built app making a plain direct connection to ONE known address uses ordinary network access and never needs the discovery permission at all. And the tunnel route &mdash; Act 2 of this guide, The Sidewalk &mdash; removes the question entirely for anyone arriving from the street: no house address is ever typed into the phone&rsquo;s browser again.</p>'+
+    '<p><em>The principle on this door: the porch should be reachable silently.</em></p>';
+  }
+  if(n===5){
+    h = '<p>Three different faults can wear one symptom &mdash; &ldquo;the phone can&rsquo;t reach it.&rdquo; The ladder is the guide&rsquo;s diagnostic spine. Climb it in order, one rung at a time, no skipping.</p>'+
+    '<h3>Rung 1 — Is anything home at all?</h3>'+ block("netstat","Command Prompt or PowerShell")+
+    '<ul class="tight"><li><strong>NO line at all</strong> &rarr; nothing is listening. The server is down or was never started. <em>(Field verdict: the process had died sometime after its last proof of life, and every knock since had been on an empty house. The firewall work done meanwhile was real and necessary &mdash; and could never have resurrected a stopped server.)</em></li>'+
+    '<li><strong>A 127.0.0.1 line</strong> &rarr; the program listens on the kitchen door only. This porch binds every address (0.0.0.0) by construction; a localhost-only line means the wrong build is running.</li>'+
+    '<li><strong>A 0.0.0.0 line</strong> &rarr; the server is up and listening everywhere; the block is downstream &mdash; the filing (Ambush 3), the rule (stage 9), or a BLOCK rule outranking the allow. In Windows Firewall, block beats allow, every time.</li></ul>'+
+    '<h3>Rung 2 — The window&rsquo;s testimony</h3>'+
+    '<p>If the server window sits at &ldquo;Press any key to continue,&rdquo; the process died and the start script is holding the body. <strong>READ THE TEXT ABOVE THE PAUSE LINE BEFORE TOUCHING ANYTHING: it is the death certificate.</strong> Photograph it. A server that died once needs its cause named before it ever holds anything real. <em>(Field lesson, carried in full: the walked run&rsquo;s death left NO captured cause &mdash; the old window was gone before anyone read it &mdash; and the cause stands &ldquo;unknown, watch item&rdquo; in its run receipt to this day. The guide exists so the next death gets read.)</em></p>'+
+    '<h3>Rung 3 — Traceback literacy</h3>'+
+    '<p>Not every wall of text in the server window is a death. A client hang-up prints like this:</p>'+
+    face(["ConnectionResetError: [WinError 10054] An existing connection","was forcibly closed by the remote host"]) +
+    '<p>&mdash; with the <strong>client&rsquo;s</strong> address in the lines around it. Plain meaning: something knocked and hung up mid-sentence (a closed tab, a dropped connection, an aborted load). The request thread dies; <strong>THE SERVER STANDS</strong>. No refresh, no restart, nothing to fix. The test is always the same: does the board still answer? A traceback with the server still answering is weather, not damage.</p>'+
+    '<h3>Rung 4 — The road between</h3>'+
+    '<p>Only with a listener proven do you test the wire. Read the phone&rsquo;s own address from its Wi-Fi details, type it here, and the guide assembles the knock:</p>'+
+    '<p><input type="text" data-fact="phoneIp" value="'+esc(S.facts.phoneIp)+'" placeholder="192.168.1.176" inputmode="numeric"></p>'+
+    '<div id="pingOut">'+ block(null,"Command Prompt or PowerShell",pingBlock()) +'</div>'+
+    '<p>Then <strong>READ THE WHOLE ANSWER</strong>:</p><ul class="tight">'+
+    '<li><strong>Replies with TTL=64</strong> &rarr; no router hop between them; same wire, talking directly. Road healthy; the fault is at an app layer, not the network.</li>'+
+    '<li><strong>&ldquo;Destination host unreachable&rdquo;</strong> (often reported FROM the PC&rsquo;s own address) &rarr; the PC is calling a number on a wire the phone isn&rsquo;t on: two boxes both handing out the same 192.168.1.x numbers. <strong>Diagnosis ends here.</strong> Same numbers, different floors &mdash; named plainly, and re-wiring a two-box house is an <em>unwalked path</em>, not an improvisation.</li>'+
+    '<li><strong>&ldquo;Request timed out&rdquo;</strong> &rarr; packets leave, nothing returns &mdash; filtering or isolation between the two. Named, and likewise a stop, not a guess.</li></ul>'+
+    '<h3>Rung 5 — The startup race</h3>'+
+    '<p>A knock in the first seconds after a start can fail while the process is still binding its port. <em>(Field: first curl failed; the identical second poured the page.)</em> One retry is procedure. Two identical failures are data.</p>'+
+    '<div class="good"><h3>The law under the whole ladder</h3><p>A closed window is a dark board &mdash; the server has no other body. Half of all &ldquo;server down&rdquo; reports in this class will be a window somebody tidied away. The guide checks the window before it checks the world.</p></div>';
+  }
+  if(n===6){
+    h = '<p>Not a door in the machine &mdash; a door in the instructions, and the field week&rsquo;s most repeated lesson. The field owner&rsquo;s own rule, verbatim in spirit: <em>&ldquo;I don&rsquo;t type unless it&rsquo;s to you or a human &mdash; these get cut and paste.&rdquo;</em></p>'+
+    '<h3>Complete blocks only</h3><p>No blanks to fill in, no mid-line edits, no &ldquo;replace X with yours&rdquo;. A command that needs a value <strong>fetches its own value</strong> &mdash; the profile flip names no connection because it flips the one it finds. Every block in this guide is runnable exactly as printed; the one block that needs your address (the street knock) is assembled whole by the guide from what you read at stage 7.</p>'+
+    '<h3>The right shell</h3><p>A block must match the window in front of you, and every block in this guide says its shell on its face. PowerShell syntax pasted into a Command Prompt window fails with costume errors, and PowerShell&rsquo;s <em>curl</em> is an alias in costume &mdash; the guide standardizes on <strong>curl.exe</strong>.</p>'+
+    '<h3>The admin window, one dance</h3><p><strong>Windows key &rarr; type powershell &rarr; Ctrl+Shift+Enter &rarr; Alt+Y.</strong> Learned once, by rote &mdash; half the walk&rsquo;s presses need an admin window, and hunting for one mid-walk is where walks fall apart.</p>'+
+    '<h3>The fresh-window rule</h3><p>A running shell NEVER sees PATH changes (installs, new tools). Any &ldquo;not recognized&rdquo; right after an install is answered by a <strong>fresh window</strong> before it is answered by a reinstall &mdash; a lesson bought with three identical &ldquo;not recognized&rdquo; results in one night.</p>'+
+    '<h3>Never type what can be pasted</h3><p>Pastes can&rsquo;t fumble a character &mdash; and keyboards remember what you type, while a paste teaches them nothing. The one thing never pasted OR typed anywhere near this guide is your key: that goes from your head to the server&rsquo;s own surfaces only.</p>';
+  }
+  app.innerHTML = ambushShell(n, h); window.scrollTo(0,0);
+}
+/* ============ UNWALKED PATHS — the honest disclosure ============ */
+function renderUnwalked(){
+  var h = '<div class="card"><p class="kicker">Stated before reliance, not discovered after</p><h2>What this guide does NOT cover</h2>'+
+  '<ul class="tight">'+
+  '<li><strong>ROUTER WORK OF ANY KIND.</strong> No passthrough, no port forwarding, no router settings pages. The walk opens exactly one door, in the PC&rsquo;s own firewall, on the home side only.</li>'+
+  '<li><strong>OTHER TUNNEL SERVICES, QUICK TUNNELS, AND CUSTOM DOMAINS.</strong> Act 2 walks ONE street door: the funnel the porch&rsquo;s own go-live pass proved, with its stable address. Other tunnel brands, quick tunnels whose address changes every run, and doors hung on a domain you buy are named in the porch&rsquo;s papers as variants &mdash; they are not walked here, and the guide does not pretend the one walked door covers them.</li>'+
+  '<li><strong>TWO-ROUTER / TWO-SEGMENT HOMES, beyond diagnosis.</strong> The ladder can NAME the condition &mdash; same numbers, different floors &mdash; from a ping&rsquo;s answer. Re-wiring such a house is not walked, and the guide stops at the naming rather than improvising inside someone&rsquo;s network.</li>'+
+  '<li><strong>Wi-Fi CLIENT/AP ISOLATION</strong> turned on in a router (presents as &ldquo;timed out&rdquo; on the ladder): diagnosable, not fixable here &mdash; the fix lives in router settings, which are unwalked ground.</li>'+
+  '<li><strong>macOS AND LINUX HOSTS.</strong> The walk is a Windows walk: its firewall, its profile filing, its shells. Other hosts need their own walks and their own receipts; none are claimed.</li>'+
+  '<li><strong>SERVERS OUTSIDE THE RECIPE SHAPE:</strong> anything needing an install beyond a present Python 3, a database, a service manager, or admin-domain machinery is out of the class and out of the guide.</li>'+
+  '<li><strong>POLICY-LOCKED MACHINES:</strong> if a PC&rsquo;s network filing cannot be changed by its owner, the guide says so and ends the walk honestly at that door. A stopped walk with a true reason is a successful use of this guide.</li>'+
+  '<li><strong>THE SERVER&rsquo;S OWN LATER LIFE:</strong> updates to the server package, key changes beyond the taught loop, and the porch&rsquo;s own security pass belong to the server&rsquo;s papers, not this guide.</li></ul>'+
+  '<p class="small">Only walked recipes are offered, and only walked paths are walked. Everything else wears its label.</p></div>';
+  app.innerHTML = h; window.scrollTo(0,0);
+}
+/* ============ SECURITY LINE, SAFE PANEL, RECEIPTS, PAST SHELF ============ */
+function securityBody(st){
+  if(st.finished) return "Completed as designed &mdash; every gate closed and proven by its knock: your own key word in place, one numbered door open to your house only, the operator page answering only to your key.";
+  if(st.stopped) return "NOT completed &mdash; this walk stopped at stage 8: the network filing could not be changed on this machine. The firewall door (stage 9), the street knock (stage 10), and the phone proof (stage 11) were never done, so this porch is not proven reachable from the street or the phone. The gates closed above stand as walked; nothing here claims more than it proves.";
+  var open = [];
+  var dn = st.done || {};
+  for(var i=1;i<=12;i++){ if(!dn[i]) open.push(i); }
+  return "Not finished yet &mdash; stage"+(open.length>1?"s":"")+" "+open.join(", ")+" still open. This line reads &ldquo;completed as designed&rdquo; only when every gate has truly closed.";
+}
+function dateStrOf(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function renderSafePanel(){
+  return '<div class="card"><p class="kicker">Read this before the receipt &mdash; you earned it</p><h2>WHY YOUR SERVER IS SAFE</h2>'+
+  '<p>You lit this porch with your own hands. Here is what makes it safe &mdash; and every line is something <strong>you actually did</strong> in this walk, not a promise printed on a box:</p><ul class="tight">'+
+  '<li><strong>Your key is a word you invented.</strong> You swapped it in <em>before</em> the server ever ran (stage 3), and you never typed it into this guide &mdash; there is no box here for it. The guide only checked that the starter word was gone.</li>'+
+  '<li><strong>The starter word is dead.</strong> The package shipped with a word anyone who held it could read &mdash; '+esc(RECIPE.starterKey)+'. It opens nothing now.</li>'+
+  '<li><strong>The operator page answers only to your key.</strong> You proved it yourself with a harmless test (stage 6): with the wrong word, the server answers '+esc(RECIPE.errAnswer)+'.</li>'+
+  '<li><strong>One numbered door, your house only.</strong> Port '+RECIPE.port+' was opened inbound on your Private filing (stages 8&ndash;9) &mdash; reachable from inside your home network, never given a door to the wider internet. No router settings were touched.</li>'+
+  '<li><strong>Nothing phones home.</strong> The server is the program in the window you can see; close the window and it is off. This guide made no accounts, installed nothing extra, and sent nothing anywhere.</li></ul>'+
+  '<p>The receipt below is the evidence for every line above.</p></div>';
+}
+function receiptCardHTML(d){
+  var h = '<div class="card"><p class="kicker">The walk&rsquo;s whole evidence, one page</p><h2>RUN RECEIPT &mdash; porch '+(d.finished? "first lighting":"walk record")+'</h2>'+
+  '<table class="receipt">'+
+  '<tr><td class="k">Date</td><td>'+esc(d.dateStr)+'</td></tr>'+
+  '<tr><td class="k">Machine</td><td>'+esc(d.alias||"(connection name not recorded)")+(d.alias? " &mdash; connection as read at stage 1":"")+'</td></tr>'+
+  '<tr><td class="k">Package</td><td>'+esc(RECIPE.packageLine)+", port "+RECIPE.port+'</td></tr></table>';
+  var anyClosed = false;
+  for(var i=1;i<=12;i++){
+    if(d.receipts[i]){
+      anyClosed = true;
+      h += '<div class="rline"><div class="rl-t">Stage '+i+" &mdash; "+esc(RECEIPT_TITLES[i])+'</div>'+esc(d.receipts[i])+'</div>';
+    } else if(d.stopped && i>8){
+      break;
+    } else {
+      h += '<div class="rline" style="border-color:var(--line)"><div class="rl-t">Stage '+i+" &mdash; "+esc(RECEIPT_TITLES[i])+'</div><span class="small">Not closed yet.</span></div>';
+    }
+  }
+  if(d.stopped){
+    h += '<div class="stop"><h3>Walk stopped &mdash; honestly</h3><p>Stopped at stage 8: the network filing could not be changed by its owner on this machine (read-back still Public after the flip). This machine&rsquo;s filing is policy-locked. The stages above stand as walked; the remaining doors were not attempted, and the guide does not improvise past a locked door.</p></div>';
+  }
+  if(anyClosed || d.stopped || d.finished){
+    h += '<div class="rline"><div class="rl-t">Security</div>'+d.security+'</div>';
+  }
+  h += '<div class="rline" style="border-color:var(--flag)"><div class="rl-t">Watch items</div>'+
+    (d.watch && d.watch.trim()? esc(d.watch) : '<span class="small">None recorded. (A receipt with a watch item on it is a good receipt &mdash; the doctrine is honesty, not tidiness.)</span>')+'</div>';
+  if(d.finished){
+    h += '<div class="good"><h3>Walk complete</h3><p>Every gate verified by a knock, not a hope. Keep this receipt with the server folder &mdash; on the bad morning, it is the first thing to read.</p></div>';
+  }
+  return h + '</div>';
+}
+function renderReceipt(){
+  var d = { dateStr: dateStrOf(new Date()), alias: S.facts.alias, receipts: S.receipts,
+    stopped: S.stopped, finished: S.finished, watch: S.facts.watch, security: securityBody(S) };
+  var h = actTabsHTML(S.act3.closed? 3 : (S.act2.finished? 2 : 1));
+  if(S.finished && !S.act2.finished) h += renderSafePanel();
+  h += receiptCardHTML(d);
+  if(S.finished && !S.act2.finished) h += handoffCardHTML();
+  if(S.act2.started || S.act2.finished) h += receiptCard2HTML(act2DataOf(S));
+  if(S.act2.finished && !S.act3.closed) h += '<div class="card"><p class="kicker">One act left</p><h2>The street door, kept</h2><p>The sidewalk is proven. Act 3 is daily life with the door: the two clicks, the window law, and a relight proven by your own hand.</p><p class="noprint"><button class="primary" data-act="3">Begin Act 3 &mdash; The Street Door, Kept &rarr;</button></p></div>';
+  if(S.act3.closed){ h += act3CardHTML(S); h += wholeWalkHTML(S); }
+  h += '<p class="noprint"><button class="primary" data-print="1">Print / save this receipt</button> <button data-nav="home">Home</button>'+
+    ((S.finished||S.stopped)? ' <button data-buildanother="1">Build another server</button>' : '')+
+    ' <button data-nav="past">Past receipts</button></p>';
+  h += workedExampleHTML();
+  app.innerHTML = h; window.scrollTo(0,0);
+}
+/* ============ PAST RECEIPTS — the shelf ============ */
+function archiveCurrent(){
+  if(S.archivedId) return null;
+  if(!(S.finished || S.stopped)) return null;
+  var lines = {};
+  for(var i=1;i<=12;i++){ if(S.receipts[i]) lines[i] = S.receipts[i]; }
+  var lines2 = {};
+  for(var j2=1;j2<=6;j2++){ if(S.act2.receipts[j2]) lines2[j2] = S.act2.receipts[j2]; }
+  var entry = { id: Date.now(), dateStr: dateStrOf(new Date()), alias: S.facts.alias||"",
+    finished: !!S.finished, stopped: !!S.stopped, receipts: lines,
+    act2: { finished: !!S.act2.finished, receipts: lines2, pubAddr: S.act2.facts.pubAddr||"" },
+    act3: { closed: !!S.act3.closed, watch3: S.act3.facts.watch3||"" },
+    whole: !!(S.finished && S.act2.finished && S.act3.closed),
+    watch: S.facts.watch||"", security: securityBody(S) };
+  ARCH.unshift(entry); saveArch();
+  S.archivedId = entry.id; save();
+  return entry;
+}
+function freshStart(){
+  if(S.finished || S.stopped) archiveCurrent();
+  S = blankState(); save(); show("home");
+}
+function renderPastList(){
+  var h = '<div class="card"><p class="kicker">Kept on this machine only</p><h2>Past receipts</h2>'+
+  '<p>When a walk ends and you choose <strong>Build another server</strong>, that walk&rsquo;s receipt moves here &mdash; archived, not lost. The shelf lives in this browser, on this PC, and nowhere else: this guide keeps no other copy and sends nothing anywhere. (Clearing this browser&rsquo;s site data clears the shelf.)</p>';
+  if(!ARCH.length){
+    h += '<p>No past receipts yet. Finish a walk, then start another &mdash; the finished one lands here.</p>';
+  }
+  ARCH.forEach(function(e, idx){
+    h += '<div class="rline"><div class="rl-t">'+esc(e.dateStr)+" &mdash; "+(e.whole? "WHOLE WALK COMPLETE" : (e.finished? ((e.act2 && e.act2.finished)? "ACTS 1-2 COMPLETE" : "WALK COMPLETE") : "WALK STOPPED AT STAGE 8"))+'</div>'+
+      esc(e.receipts[7] || e.receipts[2] || "Porch server &mdash; port 8791")+'<br>'+
+      '<span class="noprint"><button class="small" data-pastview="'+idx+'">View this receipt</button> '+
+      '<button class="small danger" data-pastdel="'+idx+'">Remove</button></span></div>';
+  });
+  h += '<p class="noprint"><button data-nav="home">Home</button></p></div>';
+  app.innerHTML = h; window.scrollTo(0,0);
+}
+function renderPastReceipt(idx){
+  var e = ARCH[idx];
+  if(!e){ renderPastList(); return; }
+  var d = { dateStr: e.dateStr, alias: e.alias, receipts: e.receipts, stopped: e.stopped,
+    finished: e.finished, watch: e.watch, security: e.security };
+  var h = "";
+  if(e.finished && !(e.act2 && e.act2.finished)) h += renderSafePanel();
+  h += receiptCardHTML(d);
+  if(e.act2 && (e.act2.finished || Object.keys(e.act2.receipts||{}).length)) h += receiptCard2HTML(e.act2);
+  if(e.act3 && e.act3.closed){ h += act3CardHTML(e); }
+  if(e.whole) h += wholeWalkHTML(e);
+  h += '<p class="noprint"><button class="primary" data-print="1">Print / save this receipt</button> <button data-nav="past">&larr; All past receipts</button> <button data-nav="home">Home</button></p>';
+  app.innerHTML = h; window.scrollTo(0,0);
+}
+function workedExampleHTML(){
+  var h = "";
+  h += '<details><summary>The worked example — the field run&rsquo;s receipt, '+esc(RECIPE.walkedDate)+'</summary>'+
+  '<p class="small">This is the receipt of the run this whole guide was generalized from, kept here as the format&rsquo;s worked example:</p>'+
+  '<div class="face">'+esc(
+"RUN RECEIPT — porch first run, 2026-11-04, Center (wired Ethernet)\n"+
+"Package: Deer Getter porch server v1.0, port 8791\n"+
+"Starter key: REPLACED with the owner's own word (never read)\n"+
+"Server start: banner verified (port + Board + Ops lines)\n"+
+"Board on machine (localhost): SERVED — empty board, correct face\n"+
+"Operator proof: {\"ok\": true} via the harmless action test\n"+
+"Network filing: FOUND Public → LEFT Private (read-back verified)\n"+
+"Firewall: rule \"Deer Getter Porch\" — TCP 8791, Private, Inbound,\n  Allow — created and read back with port filter\n"+
+"Street address: 192.168.1.223 (rented — re-check before suspecting)\n"+
+"Street knock from PC: SERVED (page poured)\n"+
+"Phone: SERVED in DuckDuckGo (immediate; no permission granted)\n  and in Edge — board in hand, two browsers\n"+
+"Watch items: server died once mid-run, cause NOT captured\n"+
+"  (window gone before it was read); board lives only while\n"+
+"  its window is open.")+'</div></details>';
+  return h;
+}
+
+
+/* ============ THREE ACTS — tabs, helpers ============ */
+function act2Unlocked(){ return !!S.finished; }
+function act3Unlocked(){ return !!(S.act2 && S.act2.finished); }
+function actTabsHTML(cur){
+  function tab(n, label, done, locked){
+    var cls = ((cur===n)?"cur ":"") + (done?"done ":"") + (locked?"lock":"");
+    return '<button data-act="'+n+'" class="'+cls.trim()+'">'+(done?"&#10003; ":"")+(locked?"&#128274; ":"")+label+'</button>';
+  }
+  return '<div class="acttabs noprint" role="navigation" aria-label="The three acts">'+
+    tab(1,"Act 1 &mdash; The House", !!S.finished, false)+
+    tab(2,"Act 2 &mdash; The Sidewalk", !!S.act2.finished, !act2Unlocked())+
+    tab(3,"Act 3 &mdash; The Street Door, Kept", !!S.act3.closed, !act3Unlocked())+
+  '</div>';
+}
+function actMapHTML(){
+  function row(n, name, state, desc, btn){
+    return '<div class="rline"'+(state==="locked"?' style="border-color:var(--line)"':'')+'><div class="rl-t">Act '+n+' &mdash; '+name+' &middot; '+state+'</div>'+desc+(btn||'')+'</div>';
+  }
+  var s1 = S.finished? "complete" : (S.started? "in progress" : "not started");
+  var s2 = S.act2.finished? "complete" : (!act2Unlocked()? "locked" : (S.act2.started? "in progress" : "open"));
+  var s3 = S.act3.closed? "complete" : (!act3Unlocked()? "locked" : "open");
+  return '<div class="card"><p class="kicker">The whole road</p><h2>Three acts</h2>'+
+  '<p>One walk, three acts, in order. Each act ends in its own receipt, and the next act&rsquo;s tab unlocks only when that receipt exists &mdash; the same discipline as the stages: a press is an intention; only a knock is a fact.</p>'+
+  row(1,"The House",s1,'<p>Light the server inside your house: the twelve stages of the proven walk. The porch answers on your PC and on your phone, inside your walls.</p>','<p class="noprint"><button data-nav="walk">Go to Act 1</button></p>')+
+  row(2,"The Sidewalk",s2,'<p>Give the porch a street door: a tunnel in your own name, one funnel command, a few careful lines in the server&rsquo;s config, and a street test on your phone with the Wi-Fi off. No router work, no open ports.</p>', act2Unlocked()? '<p class="noprint"><button data-act="2">Go to Act 2</button></p>' : '<p class="small">Unlocks when Act 1&rsquo;s receipt exists.</p>')+
+  row(3,"The Street Door, Kept",s3,'<p>Daily life with the door: two clicks that live beside each other, what the funnel window is, how to relight the door after a reboot, and how to read a closed door without panic.</p>', act3Unlocked()? '<p class="noprint"><button data-act="3">Go to Act 3</button></p>' : '<p class="small">Unlocks when Act 2&rsquo;s street test passes.</p>')+
+  '</div>';
+}
+/* ============ ACT 2 — assembled blocks (whole, no blanks) ============ */
+function radio2(name, value, cur, label){
+  var sel = (cur===value)?" sel":"";
+  return '<label class="opt'+sel+'"><input type="radio" name="a2_'+name+'" value="'+esc(value)+'" data-a2knock="'+name+'"'+(cur===value?" checked":"")+'> '+label+'</label>';
+}
+function check2(id, cur, label){
+  return '<label class="opt'+(cur?" sel":"")+'"><input type="checkbox" data-a2check="'+id+'"'+(cur?" checked":"")+'> '+label+'</label>';
+}
+function check3(id, cur, label){
+  return '<label class="opt'+(cur?" sel":"")+'"><input type="checkbox" data-a3check="'+id+'"'+(cur?" checked":"")+'> '+label+'</label>';
+}
+function fwdPath(p){ return String(p||"").replace(/\\/g,"/"); }
+function eyeBuildBlock(){
+  return "cd /d \""+(S.facts.folder||"")+"\"\npy -3.13 -m venv eye-venv\neye-venv\\Scripts\\pip install ai-edge-litert pillow numpy";
+}
+function eyeSmokeBlock(){
+  return "cd \""+(S.facts.folder||"")+"\"\n$p = (Get-ChildItem \"$env:USERPROFILE\\Pictures\" -File | Select-Object -First 1).FullName\n.\\eye-venv\\Scripts\\python.exe eye_engine.py \"$p\"";
+}
+function eyeSegment(){ return '"eye_python": "'+fwdPath(S.facts.folder)+'/eye-venv/Scripts/python.exe"'; }
+function addrSegment(){ return '"public_base_url": "'+(S.act2.facts.pubAddr||"")+'"'; }
+function appSegment(){ return '"app_download_url": "'+(S.act2.facts.appUrl||"")+'"'; }
+function appSegHTML(){
+  var f = S.act2.facts;
+  if(f.appLink!=="set") return "";
+  if(!f.appUrl || !f.appUrl.trim()) return '<p class="small">When the download page&rsquo;s address is in the box, its whole segment assembles here.</p>';
+  return block(null,"Notepad — replace the whole segment",appSegment());
+}
+function configCheckBlock(){
+  return "cd \""+(S.facts.folder||"")+"\"\ntry { $null = Get-Content .\\config.json -Raw | ConvertFrom-Json; \"CONFIG VALID\" } catch { \"CONFIG BROKEN\" }";
+}
+function isPubAddr(s){ return /^https:\/\/[^\s/]+\.ts\.net\/?$/.test(s||""); }
+/* ============ ACT 2 — engine ============ */
+var A2_TITLES = ["","Before the Sidewalk","Your Tunnel Account","Open the Funnel","Wake the Eye","Tell the Porch Its Address","The Street Test"];
+var A2_PACE = ["",
+  "About 2 minutes.",
+  "About 5 minutes &mdash; the account and the install are the slow part.",
+  "About 3 minutes.",
+  "About 5 minutes &mdash; mostly waiting on one install.",
+  "About 5 minutes &mdash; careful reading, a few small segments.",
+  "About 2 minutes."];
+var A2_CALM = ["",
+  "Nothing changes in this stage. We only prove the house is lit before building its sidewalk.",
+  "The account is yours, made on the service&rsquo;s own pages. This guide never sees it, and nothing you make here can hurt the porch.",
+  "One paste, in a window that can simply be closed again &mdash; closing it closes the door, nothing else.",
+  "The eye gets its OWN small room beside the porch. If it goes wrong, the porch still serves; only the eye stays asleep, and the porch says so by name.",
+  "You will change a few small lines in a text file, each by replacing a whole segment you can see entire. A one-word check proves the file still reads before anything restarts.",
+  "This stage only looks &mdash; from the street, on your phone. Nothing on the PC changes."];
+function canOpen2(i){
+  if(S.act2.done[i]) return true;
+  for(var j=1;j<i;j++){ if(!S.act2.done[j]) return false; }
+  return true;
+}
+function a2Rail(){
+  var h = '<div class="rail noprint" role="navigation" aria-label="Act 2 stages">';
+  for(var i=1;i<=6;i++){
+    var cls = "";
+    if(S.act2.done[i]) cls += " done";
+    if(S.act2.current===i && !S.act2.finished) cls += " cur";
+    if(!canOpen2(i) && !S.act2.done[i]) cls += " lock";
+    h += '<button data-a2stage="'+i+'" class="'+cls.trim()+'">'+(S.act2.done[i]?"&#10003; ":"")+i+". "+esc(A2_TITLES[i])+'</button>';
+  }
+  return h + "</div>";
+}
+function a2Nav(n){
+  var can = canAdvance2(n);
+  var nextLabel = (n===6) ? "Close Act 2 &mdash; see the receipts" : "Stage closed &mdash; next stage &rarr;";
+  return '<div class="stageNav noprint">'+
+    (n>1? '<button data-a2stage="'+(n-1)+'">&larr; Back to stage '+(n-1)+'</button>' : '<span></span>')+
+    '<button class="primary" data-a2next="'+n+'"'+(can?"":" disabled")+'>'+nextLabel+'</button></div>'+
+    (can? "" : '<p class="small">The Next button wakes up when this stage&rsquo;s knock is satisfied. A press is an intention; only a knock is a fact.</p>');
+}
+function a2Shell(n, inner){
+  return actTabsHTML(2) + a2Rail() +
+   '<div class="card"><p class="kicker">Act 2 &mdash; The Sidewalk &middot; Stage '+n+' of 6</p>'+
+   '<h2>'+n+". "+esc(A2_TITLES[n])+'</h2>'+
+   (A2_PACE[n] ? '<p class="pace">'+A2_PACE[n]+'</p>' : '') + inner +
+   (A2_CALM[n] ? '<div class="calm"><h3>WHAT CANNOT GO WRONG HERE</h3><p style="margin:0">'+A2_CALM[n]+'</p></div>' : '') +
+   '</div>'+ a2Nav(n);
+}
+function refreshA2Next(n){
+  var b = app.querySelector('[data-a2next="'+n+'"]');
+  if(b){ b.disabled = !canAdvance2(n); }
+}
+function currentA2FromDom(){
+  var b = app.querySelector("[data-a2next]");
+  return b ? +b.getAttribute("data-a2next") : null;
+}
+function renderAct2Stage(n){
+  if(!act2Unlocked()){
+    app.innerHTML = actTabsHTML(2) +
+     '<div class="card"><p class="kicker">Act 2 &mdash; The Sidewalk</p><h2>Locked &mdash; the house comes first</h2>'+
+     '<p>The sidewalk starts at a lit house. Act 2&rsquo;s tab unlocks when <strong>Act 1&rsquo;s receipt exists</strong> &mdash; all twelve stages closed and proven by their knocks. A street door hung on an unlit porch would prove nothing, and this guide proves everything it claims.</p>'+
+     '<p class="noprint"><button class="primary" data-nav="walk">Go to Act 1 &mdash; The House</button></p></div>';
+    window.scrollTo(0,0);
+    return;
+  }
+  if(!S.act2.started){ S.act2.started = true; save(); }
+  app.innerHTML = '<div id="stageRoot">'+ A2_RENDER[n]() +'</div>';
+  window.scrollTo(0,0);
+}
+/* ============ ACT 2, STAGE 1 — BEFORE THE SIDEWALK ============ */
+function renderA2S1(){
+  var f = S.act2.facts;
+  var inner = '<p>Act 1 lit the porch inside the house. The sidewalk gives it a street door: the porch stays exactly where it is &mdash; same PC, same window, same port '+RECIPE.port+' &mdash; and a tunnel makes ONE public address that reaches in to it. <strong>No router port is ever opened.</strong></p>';
+  inner += beat("prepare","PREPARE &mdash; THREE PROOFS BEFORE ANY NEW PRESS",
+    '<p><strong>Proof one &mdash; the porch is up.</strong> On the PC, open the board at its kitchen door:</p>'+ face(["http://localhost:"+RECIPE.port+RECIPE.boardPath])+
+    '<p><strong>Proof two &mdash; the key is yours.</strong> The street door will stand in front of this porch, so the starter word question gets asked once more, the same way as Act 1 stage 3: by attestation, never by showing the guide anything. There is no key-shaped box in this act either &mdash; there never will be.</p>'+
+    '<p><strong>Proof three &mdash; the folder is found, not guessed.</strong> Everything in this act happens in the server folder &mdash; the one Act 1 stage 2 recorded: <strong>'+esc(S.facts.folder||"(not recorded)")+'</strong>. If you have moved it since, the act still works &mdash; but every paste below is assembled from that recorded path, so go and look at where the folder truly lives before swearing to this proof.</p>');
+  inner += beat("knock","THE KNOCK",
+    '<p>Swear only to what you have seen:</p>'+
+    check2("preLocal",f.preLocal,"The board just answered on this PC at its kitchen-door address")+
+    check2("preKey",f.preKey,"config.json holds MY OWN word at &ldquo;"+esc(RECIPE.keyField)+"&rdquo; &mdash; not the starter ("+esc(RECIPE.starterKey)+")")+
+    check2("preFolder",f.preFolder,"I can open the server folder at the place named above"));
+  return a2Shell(1, inner);
+}
+/* ============ ACT 2, STAGE 2 — YOUR TUNNEL ACCOUNT ============ */
+function renderA2S2(){
+  var f = S.act2.facts;
+  var inner = '<p>Why a tunnel at all: your house has one outward address, shared by every device in it, and your router keeps the street out by default &mdash; rightly. Port-forwarding would punch a permanent hole in that and print your home address on it. A tunnel is the other shape: <strong>a rented meeting point</strong>. Your PC dials OUT to it and holds the line open; visitors meet the porch there. The porch itself never moves.</p>';
+  inner += '<div class="card" style="margin:14px 0"><h3>THE HONEST TENANCY &mdash; READ IT BEFORE YOU SIGN ANYTHING</h3><ul class="tight">'+
+    '<li><strong>The tunnel rents the street, not the house.</strong> The server, the data, and your key never leave your PC. The company hosts nothing.</li>'+
+    '<li><strong>The address is borrowed.</strong> It is the tunnel service&rsquo;s name for your machine, not a name you own.</li>'+
+    '<li><strong>If the tunnel service died tomorrow,</strong> the porch falls back to house-only &mdash; exactly the Act 1 state &mdash; until another street door takes over. The porch is not the tunnel&rsquo;s tenant; the door is.</li>'+
+    '<li><strong>The price of this door is $0.</strong> The primary path below is free on its Personal plan, ongoing &mdash; not a trial. The Personal plan is licensed for personal, non-commercial use; the public name is the service&rsquo;s own (a &ldquo;.ts.net&rdquo; name) and there is a bandwidth cap the service does not publish &mdash; a text-and-photos board sips far under anything like it.</li></ul></div>';
+  inner += beat("prepare","PREPARE &mdash; THE PRIMARY PATH",
+    '<p><strong>Tailscale Funnel</strong>: a stable your-name address, no domain to buy, free tier covers this board. The account is made in <strong>your</strong> name, on the service&rsquo;s own pages, by your presses. This guide never sees the account, never holds a password for it, and never types into it.</p>');
+  inner += beat("press","PRESS HERE",
+    '<ol><li>On the PC, go to <strong>tailscale.com</strong> and make YOUR account. When it asks what the account is for, the honest answer is <strong>Personal or at-home use</strong>.</li>'+
+    '<li>Download <strong>Tailscale for Windows</strong> from the same place and install it. Sign in with the account you just made.</li>'+
+    '<li>When it offers a machine name for this PC, allow the one it suggests. <strong>That name becomes part of your public address</strong> in the next stage.</li></ol>'+
+    '<p>Your phone installs nothing. Visitors &mdash; and your phone from the street &mdash; will use an ordinary browser on the public address. Only this PC joins the tunnel network.</p>');
+  inner += beat("right","WHAT RIGHT LOOKS LIKE",
+    '<p>The tunnel app is installed and signed in on the PC. If its window ever paints blank, do not chase the paint &mdash; ask the machine instead, in a Command Prompt window:</p>'+
+    block("tailStatus","Command Prompt")+
+    '<p>Right looks like one line naming this PC, your account, and <strong>windows</strong>. The window&rsquo;s cosmetics prove nothing; that line is the receipt.</p>');
+  inner += beat("knock","THE KNOCK",
+    '<p>Did the account get made, in your name?</p>'+
+    radio2("acctMade","yes",f.acctMade,"Yes &mdash; my own account, Personal / at-home use")+
+    radio2("acctMade","no",f.acctMade,"Not yet")+
+    '<p>And the app on this PC?</p>'+
+    radio2("acctSigned","yes",f.acctSigned,"Installed and signed in &mdash; the status line names this PC")+
+    radio2("acctSigned","no",f.acctSigned,"Not yet"));
+  return a2Shell(2, inner);
+}
+/* ============ ACT 2, STAGE 3 — OPEN THE FUNNEL ============ */
+function renderA2S3(){
+  var f = S.act2.facts;
+  var inner = '<p>The street door itself is <strong>one line</strong>, pasted into a Command Prompt window. What opens is not a program you run once &mdash; it is a window that must <em>stand open</em>, the same law as the server window. From this stage on, the porch has two windows, and each one is a thing being alive.</p>';
+  inner += beat("press","PRESS HERE",
+    '<p>Open <strong>Command Prompt</strong> (Start &rarr; type <strong>cmd</strong> &rarr; Enter) and paste this one line, then press Enter:</p>'+
+    block("funnel","Command Prompt"));
+  inner += beat("right","WHAT RIGHT LOOKS LIKE",
+    '<p>The window answers with the door standing open:</p>'+
+    face(["Available on the internet:","https://your-machine.your-tailnet.ts.net/","|-- proxy http://127.0.0.1:"+RECIPE.port,"Press Ctrl+C to exit."])+
+    '<p>Your real address wears your machine&rsquo;s name and your tailnet&rsquo;s name &mdash; same shape, your words. <strong>Leave that window open.</strong> It IS the street door standing open.</p>');
+  inner += '<div class="warn"><h3>AMBUSH &mdash; TYPE IT EXACTLY</h3>'+
+    '<p>The line is <strong>'+esc("tailscale funnel "+RECIPE.port)+'</strong> and nothing else. A trailing period &mdash; <em>8791.</em> &mdash; or any extra character breaks it, and the answer is a scheme error that looks like the service&rsquo;s fault. It is not. Paste the clean line again.</p>'+
+    '<p><strong>If the answer is a link asking you to approve Funnel on your tailnet</strong> &mdash; that approval is also your press. Click it, approve, then paste the line again. Being refused once, before approval, is the design, not a failure.</p>'+
+    '<p><strong>If the answer mentions a lost connection to the tunnel service</strong> right after a refusal &mdash; that is just the refused command exiting. The receipt is the status line from stage 2, not the noise.</p></div>';
+  inner += beat("knock","THE KNOCK",
+    '<p>What did the window answer?</p>'+
+    radio2("funnelAnswer","address",f.funnelAnswer,"The &ldquo;Available on the internet&rdquo; block, with my address and the proxy line")+
+    radio2("funnelAnswer","approval",f.funnelAnswer,"A link asking me to approve Funnel first")+
+    radio2("funnelAnswer","error",f.funnelAnswer,"An error instead")+
+    (f.funnelAnswer==="approval" ? '<div class="good"><h3>The approval is the press</h3><p>Click the link, approve Funnel for your tailnet, come back to the same window, and paste the line again. Then answer &ldquo;the Available block&rdquo; above.</p></div>' : "")+
+    (f.funnelAnswer==="error" ? '<div class="warn"><h3>Read it before retrying</h3><p>Three checks, in order: (1) the line is exactly the block above &mdash; no trailing period, no extra characters; (2) the tunnel app is signed in (stage 2&rsquo;s status line); (3) the port number is '+RECIPE.port+'. Fix the named thing, paste once more.</p></div>' : "")+
+    (f.funnelAnswer==="address" ? '<p><label>Copy the address exactly as the window printed it &mdash; it starts with https:// and ends with .ts.net (this address is public by design; it is the door, not a secret):<br><input type="text" data-a2fact="pubAddr" value="'+esc(f.pubAddr)+'" placeholder="https://your-machine.your-tailnet.ts.net"></label></p>' : ""));
+  return a2Shell(3, inner);
+}
+/* ============ ACT 2, STAGE 4 — WAKE THE EYE (a room chapter) ============ */
+function renderA2S4(){
+  var f = S.act2.facts;
+  var inner = '<p>Some porches carry an <strong>eye</strong> &mdash; a small program that reads photos on the porch&rsquo;s web door. This recipe&rsquo;s porch does. The eye needs a Python of its own, in its own small room beside the porch, because of a fact nobody&rsquo;s brochure mentions:</p>'+
+  '<div class="warn"><h3>AMBUSH &mdash; NEW PYTHONS CANNOT HOST THE EYE</h3>'+
+  '<p>The eye&rsquo;s runtime (the <strong>ai-edge-litert</strong> package) is published only for <strong>Python 3.11 through 3.13</strong>. A machine whose everyday Python is 3.14 or newer will answer <em>&ldquo;No matching distribution found&rdquo;</em> &mdash; forever, on every retry. That is not your error and not a broken install; the wheels for your Python do not exist. The road is a side room: a 3.13 that lives next to the porch and disturbs nothing else on the machine.</p></div>';
+  inner += beat("knock","FIRST &mdash; DOES YOUR PORCH CARRY AN EYE?",
+    '<p>Answer for the porch you actually built:</p>'+
+    radio2("eyeHave","eye",f.eyeHave,"Yes &mdash; my porch carries an eye (this recipe&rsquo;s does)")+
+    radio2("eyeHave","noeye",f.eyeHave,"No &mdash; my porch serves its pages without an eye"));
+  if(f.eyeHave==="noeye"){
+    inner += '<div class="good"><h3>Skipped cleanly</h3><p>Then this chapter is not yours, and skipping it is the correct walk &mdash; not a shortcut. The street door does not depend on the eye. This stage closes on your answer, and the receipt will say the chapter was skipped because the porch carries no eye.</p></div>';
+  }
+  if(f.eyeHave==="eye"){
+    inner += beat("prepare","PREPARE &mdash; FIND THE FOLDER, DON&rsquo;T GUESS",
+      '<p>Every paste in this chapter begins by going to <strong>your server folder</strong> &mdash; the one Act 1 recorded: <strong>'+esc(S.facts.folder||"(not recorded)")+'</strong>. A walk that assumes the folder sits on the Desktop breaks on every machine where it doesn&rsquo;t. The blocks below are assembled from your recorded path. If you moved the folder, stop and correct the record first (Act 1, stage 2) &mdash; never hand-edit a paste to chase it.</p>');
+    inner += beat("press","PRESS HERE &mdash; FETCH PYTHON 3.13",
+      '<p>The Python Install Manager arrives with modern python.org installs, and it fetches a 3.13 without touching your everyday Python. In <strong>Command Prompt</strong>:</p>'+
+      block("pyInstall313","Command Prompt")+
+      '<p>If a yellow warning says a 3.13 is <strong>already registered</strong> and the new one was not registered &mdash; that warning is a <em>paper tiger</em>. Do not chase the remove-and-refresh surgery it suggests. The manager&rsquo;s own spelling still reaches the new Python, and the receipt is one line:</p>'+
+      block("py313Version","Command Prompt")+
+      '<p>Right looks like: <strong>Python 3.13.x</strong>. That line &mdash; not the warning&rsquo;s opinion &mdash; is the proof.</p>'+
+      '<p class="small">If the <em>py</em> command itself is not recognized, the Install Manager is not on this machine: install Python from python.org first (Act 1&rsquo;s detour), then come back.</p>');
+    inner += beat("press","PRESS HERE &mdash; BUILD THE EYE&rsquo;S ROOM",
+      '<p>Still in Command Prompt, paste these lines <strong>one at a time</strong>, Enter after each. The first line goes to your folder; the second builds the room with 3.13; the third stocks it:</p>'+
+      block(null,"Command Prompt — one line at a time",eyeBuildBlock())+
+      '<p>Right looks like a success tail naming <strong>ai-edge-litert</strong> among the installed packages. (The note suggesting you upgrade pip itself is scenery &mdash; ignore it.)</p>');
+    inner += beat("press","PRESS HERE &mdash; THE SMOKE TEST",
+      '<p>Prove the eye answers before telling the porch where it lives. In <strong>PowerShell</strong>, this pair fetches the first picture in your Pictures folder by itself &mdash; no path for you to type, nothing to get wrong:</p>'+
+      block(null,"PowerShell — in the server folder",eyeSmokeBlock())+
+      '<p>First the runtime introduces itself (a line about a TensorFlow Lite delegate &mdash; that is the engine clearing its throat), then <strong>one JSON line</strong> answers.</p>');
+    inner += beat("right","WHAT RIGHT LOOKS LIKE",
+      '<p>A line shaped like: <strong>{"ok": true, "verdict": "NOT_DEER", ...}</strong>. Any verdict is the engine answering &mdash; the photo is whatever sits first in your Pictures, and NOT_DEER is the expected stranger. What matters is <em>ok: true</em>: the runtime loaded, the model loaded, the eye spoke.</p>'+
+      '<p><strong>If it answers {"ok": false, ...} naming the file</strong> &mdash; the engine is alive and the <em>photo</em> is at fault (the first file in Pictures was not a readable photo). The room is built; point the same command at a real photo file and read again.</p>'+
+      '<p><strong>If a Python traceback wall answers instead</strong> &mdash; the room was built by the wrong Python. Rebuild it with <em>py -3.13</em> exactly as above; do not reinstall your everyday Python, and do not retry the eye package against it.</p>');
+    inner += beat("press","PRESS HERE &mdash; TELL THE PORCH (WHOLE SEGMENT)",
+      '<p>Last, the porch learns where its eye lives. This is a config edit, and config edits in this guide obey one doctrine &mdash; stage 5 states it in full; here is its working shape:</p><ul class="tight">'+
+      '<li>Open <strong>'+esc(RECIPE.configFile)+'</strong> in Notepad. Press <strong>Ctrl+Home</strong> first (Find only searches <em>downward</em> from the cursor).</li>'+
+      '<li><strong>Ctrl+F</strong> the fragment <strong>eye_python</strong> &mdash; fragments find what wrapping hides.</li>'+
+      '<li>Select the <strong>whole segment</strong> &mdash; <em>&ldquo;eye_python&rdquo;: &ldquo;&rdquo;</em>, name, quotes, and value as one piece &mdash; and replace it with the segment below. Never &ldquo;type the path between the quotes&rdquo;: label and value love to swap seats.</li></ul>'+
+      block(null,"Notepad — replace the whole segment",eyeSegment())+
+      '<p>Save (Ctrl+S). The porch reads it at the restart in stage 5 &mdash; no restart yet.</p>');
+    inner += beat("knock","THE KNOCK",
+      '<p>What did the smoke test answer?</p>'+
+      radio2("eyeSmoke","json",f.eyeSmoke,"One JSON line with &ldquo;ok&rdquo;: true &mdash; the eye spoke")+
+      radio2("eyeSmoke","named",f.eyeSmoke,"A JSON line with &ldquo;ok&rdquo;: false, naming the photo file")+
+      radio2("eyeSmoke","traceback",f.eyeSmoke,"A Python traceback wall instead")+
+      (f.eyeSmoke==="named" ? '<div class="warn"><h3>The engine is alive &mdash; feed it a real photo</h3><p>Run the smoke pair again with an actual photo file in place of the fetched one (a .jpg you can see). When it answers <em>ok: true</em>, this knock is yours.</p></div>' : "")+
+      (f.eyeSmoke==="traceback" ? '<div class="warn"><h3>Wrong Python built the room</h3><p>Prove the interpreter first: the version block above must answer Python 3.13.x. Then delete the eye-venv folder and rebuild it with the exact three lines. Retrying the install against a newer Python is the one road that never arrives.</p></div>' : "")+
+      check2("eyeSeg",f.eyeSeg,"I replaced the WHOLE &ldquo;eye_python&rdquo; segment with the assembled one, and saved"));
+  }
+  return a2Shell(4, inner);
+}
+/* ============ ACT 2, STAGE 5 — TELL THE PORCH ITS ADDRESS ============ */
+function renderA2S5(){
+  var f = S.act2.facts;
+  var inner = '<p>The porch does not know its own street address until you tell it. That telling happens in <strong>'+esc(RECIPE.configFile)+'</strong> &mdash; and this stage teaches the editing doctrine once, properly, because config files punish eyeballing in three specific ways.</p>';
+  inner += '<div class="card" style="margin:14px 0"><h3>THE CONFIG DOCTRINE</h3><ul class="tight">'+
+    '<li><strong>Find reads the raw file; your eyes read the wrapped one.</strong> Notepad&rsquo;s word wrap can split a word across two screen lines, so a whole-word search misses what is plainly there. Search a <strong>fragment</strong> &mdash; the back half of the word (like <em>base_url</em>, or <em>hange-me</em> inside the starter key) &mdash; and Find lands mid-word, wrap or no wrap.</li>'+
+    '<li><strong>Find searches downward from the cursor.</strong> If the field is above where you are sitting, Find reports failure while staring at the first line of the file. <strong>Ctrl+Home first</strong> &mdash; always.</li>'+
+    '<li><strong>Replace WHOLE SEGMENTS.</strong> Select the field&rsquo;s name, colon, quotes, value, and trailing comma as one piece, and paste the replacement over it. &ldquo;Put X between the quotes&rdquo; is how labels and values swap seats &mdash; the file then wears the address as a field <em>name</em>, and nothing works for reasons that look haunted. They are not haunted. They are seated wrong.</li></ul></div>';
+  inner += beat("press","PRESS HERE &mdash; TWO SEGMENTS, THEN MAYBE A THIRD",
+    '<p>Open <strong>'+esc(RECIPE.configFile)+'</strong> in Notepad. <strong>Ctrl+Home</strong>. For each segment: Ctrl+F its fragment, select the whole segment, paste the replacement over it.</p>'+
+    '<p><strong>Segment one</strong> &mdash; fragment: <em>base_url</em>. Replace the whole &ldquo;public_base_url&rdquo; segment with:</p>'+
+    block(null,"Notepad — replace the whole segment",addrSegment())+
+    '<p><strong>Segment two</strong> &mdash; fragment: <em>trust_tunnel</em>. Replace the whole &ldquo;trust_tunnel_headers&rdquo; segment with:</p>'+
+    block(null,"Notepad — replace the whole segment",'"trust_tunnel_headers": true')+
+    '<p><strong>Segment three &mdash; only if your porch carries an app link.</strong> When the app&rsquo;s public download page exists (a release page, not a naked file &mdash; the page explains itself to a visitor whose phone cannot install the file), its address hangs on the portal&rsquo;s &ldquo;Get the app&rdquo; card:</p>'+
+    radio2("appLink","set",f.appLink,"My porch carries an app link &mdash; set it now")+
+    radio2("appLink","skip",f.appLink,"Not now &mdash; the card will honestly say the link is coming")+
+    (f.appLink==="set" ? '<p><label>The download page&rsquo;s address:<br><input type="text" data-a2fact="appUrl" value="'+esc(f.appUrl)+'" placeholder="https://&hellip;/releases/tag/v1.0"></label></p><div id="appSegOut">'+appSegHTML()+'</div>'+check2("appSeg",f.appSeg,"I replaced the WHOLE &ldquo;app_download_url&rdquo; segment with the assembled one") : "")+
+    '<p>Then <strong>Ctrl+S</strong> and close Notepad.</p>');
+  inner += beat("press","PRESS HERE &mdash; THE CHECK THAT CANNOT BETRAY YOU",
+    '<p>Prove the file still reads &mdash; with a check that answers <strong>one word</strong> and can never print the file. In <strong>PowerShell</strong>:</p>'+
+    block(null,"PowerShell",configCheckBlock())+
+    '<p>Right is: <strong>CONFIG VALID</strong>.</p>'+
+    '<div class="warn"><h3>IF A CHECK EVER DUMPS THE FILE &mdash; THE KEY IS BURNED</h3>'+
+    '<p>Some error messages print the whole config while complaining. If that ever happens on a screen anyone else can see &mdash; a paste to a helper, a screenshot, a shared log &mdash; then <strong>anything secret in the file is burned</strong>: your operator word has traveled. The recovery is not panic; it is the swap you already know: stop the server, change the word in config (Act 1, stage 3), restart, and re-prove it with Act 1 stage 6&rsquo;s harmless test before going on. This guide&rsquo;s checks are built non-dumping for exactly this reason.</p></div>');
+  inner += beat("right","WHAT RIGHT LOOKS LIKE &mdash; THE RESTART",
+    '<p>Close the server window and double-click <strong>'+esc(RECIPE.startScript)+'</strong>. Read the new banner against Act 1&rsquo;s: the same lines, <strong>plus a Public line wearing your tunnel address</strong> &mdash; and, on an eye porch, <strong>no</strong> note saying the eye is asleep. The banner is the porch telling you it read the file. If the Public line is missing, the file was not read or not saved &mdash; the check above says which.</p>');
+  inner += beat("knock","THE KNOCK",
+    '<p>Swear only to what you have seen:</p>'+
+    check2("addrSeg",f.addrSeg,"Segment one replaced whole &mdash; the address sits as the VALUE of public_base_url")+
+    check2("trustSeg",f.trustSeg,"Segment two replaced whole &mdash; trust_tunnel_headers reads true")+
+    check2("validOk",f.validOk,"The check answered CONFIG VALID (one word, nothing dumped)")+
+    check2("bannerRead",f.bannerRead,"After the restart, the banner shows the Public line (and no eye-asleep note, on an eye porch)"));
+  return a2Shell(5, inner);
+}
+/* ============ ACT 2, STAGE 6 — THE STREET TEST ============ */
+function renderA2S6(){
+  var f = S.act2.facts;
+  var addr = f.pubAddr || "";
+  var inner = '<p>The proof of a street door is made <strong>from the street</strong>. Act 1 proved the house with the phone on home Wi-Fi; this test is the opposite on purpose: <strong>the phone leaves the house&rsquo;s network entirely</strong>, and the porch must still answer.</p>';
+  inner += beat("press","PRESS HERE",
+    '<p>On your phone: <strong>turn Wi-Fi OFF</strong> (mobile data only &mdash; look for the cell-data badge in the status bar), then open:</p>'+
+    (addr ? '<p class="chunk">'+esc(addr)+'/portal</p><p class="small">The same address the funnel window printed, with <strong>/portal</strong> on the end &mdash; the porch&rsquo;s web door.</p>'
+          : '<p class="small">Your tunnel address appears here once stage 3 records it.</p>'));
+  inner += beat("right","WHAT RIGHT LOOKS LIKE",
+    '<p>The board&rsquo;s page, on the phone, over mobile data: its title, its buttons, and the honest empty-board line if no posts stand. Scroll to the <strong>Get the app</strong> card: if you set the link in stage 5, the card carries it and tapping it lands on the download page; if you skipped, the card says the link is coming &mdash; both are correct, and each matches what you did.</p>');
+  inner += beat("knock","THE KNOCK",
+    '<p>Did the board answer from the street?</p>'+
+    radio2("streetTest","answered",f.streetTest,"Yes &mdash; the board answered on mobile data, Wi-Fi off")+
+    radio2("streetTest","noanswer",f.streetTest,"No answer, or an error")+
+    (f.streetTest==="noanswer" ? '<div class="warn"><h3>READ THE DOOR BEFORE BLAMING IT &mdash; THREE CHECKS, IN ORDER</h3><ol>'+
+      '<li><strong>The funnel window.</strong> Is it still open on the PC, still wearing the &ldquo;Available on the internet&rdquo; block? A closed funnel window is a closed street door with a perfectly healthy porch behind it.</li>'+
+      '<li><strong>The server window.</strong> Banner standing, Public line present, no death text above a &ldquo;press any key&rdquo; line? If the porch died, its window says why &mdash; read it before touching anything (Ambush 5).</li>'+
+      '<li><strong>The tunnel app.</strong> Still signed in (stage 2&rsquo;s status line)? A signed-out tunnel is a door nobody is holding open.</li></ol>'+
+      '<p>Fix the named thing &mdash; relight a window, sign in again &mdash; then knock once more. Nothing here is fixed by changing the porch.</p></div>' : "")+
+    (f.streetTest==="answered" ? '<div class="good"><h3>THE SIDEWALK IS PROVEN</h3><p>Your porch answers from anywhere now, while standing on your own PC. Closing this stage writes Act 2&rsquo;s receipt and unlocks Act 3 &mdash; daily life with the door.</p></div>' : ""));
+  return a2Shell(6, inner);
+}
+var A2_RENDER = [null,renderA2S1,renderA2S2,renderA2S3,renderA2S4,renderA2S5,renderA2S6];
+function canAdvance2(n){
+  var f = S.act2.facts;
+  switch(n){
+    case 1: return f.preLocal && f.preKey && f.preFolder;
+    case 2: return f.acctMade==="yes" && f.acctSigned==="yes";
+    case 3: return f.funnelAnswer==="address" && isPubAddr(f.pubAddr);
+    case 4:
+      if(f.eyeHave==="noeye") return true;
+      if(f.eyeHave==="eye") return f.eyeSmoke==="json" && f.eyeSeg;
+      return false;
+    case 5: return f.addrSeg && f.trustSeg && f.validOk && f.bannerRead &&
+      (f.appLink==="skip" || (f.appLink==="set" && f.appSeg && (f.appUrl||"").trim()!==""));
+    case 6: return f.streetTest==="answered";
+  }
+  return false;
+}
+var A2_RECEIPT_TITLES = ["","Pre-flight","Tunnel account","Funnel","The eye room","The address","Street test"];
+function receiptLine2(n){
+  var f = S.act2.facts;
+  switch(n){
+    case 1: return "Sidewalk pre-flight \u2014 porch answering on the machine itself; the operator key attested as the owner's own word (its value never read by the guide); the server folder located where the walk put it.";
+    case 2: return "Tunnel account \u2014 the walker's own free Personal-plan account; the tunnel app installed and signed in on the PC. The tunnel rents the street, not the house; the company hosts nothing.";
+    case 3: return "Funnel open \u2014 public address: "+(f.pubAddr||"?")+", standing open in its own window.";
+    case 4: return (f.eyeHave==="noeye")
+      ? "The eye room \u2014 this porch carries no eye; the chapter was skipped cleanly."
+      : "The eye room \u2014 a Python 3.13 room built beside the porch; the smoke test answered in JSON; eye_python set by whole-segment replacement.";
+    case 5: return "The porch told its address \u2014 public_base_url and trust_tunnel_headers set by whole-segment replacement; the config check answered CONFIG VALID"+
+      (f.appLink==="set"? "; the app link set." : (f.appLink==="skip"? "; no app link set (the portal card says so honestly)." : "."))+
+      " The porch was restarted and its banner read.";
+    case 6: return "Street test \u2014 the board answered on the phone over mobile data, Wi-Fi off, at "+(f.pubAddr||"?")+"/portal. The sidewalk is proven from the street.";
+  }
+  return "";
+}
+function closeStage2(n){
+  S.act2.done[n] = true;
+  S.act2.receipts[n] = receiptLine2(n);
+  if(n===6){ S.act2.finished = true; }
+  else { S.act2.current = n+1; }
+  save();
+}
+function securityBody2(a2){
+  if(a2.finished) return "Street door proven from the street \u2014 the board answered on mobile data at the tunnel address. The porch itself never moved: it stands on the owner's own PC, no router door was opened, and the tunnel company hosts nothing. Close the funnel window and the porch is house-only again.";
+  var open = []; var rc = (a2 && a2.receipts) || {};
+  for(var i=1;i<=6;i++){ if(!rc[i]) open.push(i); }
+  return "Act 2 not finished yet \u2014 stage"+(open.length>1?"s":"")+" "+open.join(", ")+" of the sidewalk still open.";
+}
+function act2DataOf(st){
+  return { finished: !!st.act2.finished, receipts: st.act2.receipts || {}, pubAddr: (st.act2.facts? (st.act2.facts.pubAddr||"") : (st.act2.pubAddr||"")) };
+}
+function receiptCard2HTML(a2){
+  var h = '<div class="card"><p class="kicker">Act 2 &mdash; The Sidewalk</p><h2>ACT 2 RECEIPT &mdash; the street door</h2>'+
+  '<table class="receipt"><tr><td class="k">Public address</td><td>'+esc(a2.pubAddr||"(not recorded)")+'</td></tr>'+
+  '<tr><td class="k">Street door</td><td>A tunnel (funnel) to port '+RECIPE.port+' on the owner&rsquo;s PC &mdash; no router port opened, nothing hosted by the tunnel company.</td></tr></table>';
+  for(var i=1;i<=6;i++){
+    if(a2.receipts && a2.receipts[i]){
+      h += '<div class="rline"><div class="rl-t">Stage '+i+" &mdash; "+esc(A2_RECEIPT_TITLES[i])+'</div>'+esc(a2.receipts[i])+'</div>';
+    } else {
+      h += '<div class="rline" style="border-color:var(--line)"><div class="rl-t">Stage '+i+" &mdash; "+esc(A2_RECEIPT_TITLES[i])+'</div><span class="small">Not closed yet.</span></div>';
+    }
+  }
+  h += '<div class="rline"><div class="rl-t">Security</div>'+securityBody2(a2)+'</div>';
+  return h + '</div>';
+}
+function handoffCardHTML(){
+  return '<div class="card"><p class="kicker">Act 1 complete</p><h2>THE HOUSE IS LIT &mdash; THE SIDEWALK IS NEXT</h2>'+
+  '<p>Your porch answers inside your house, and Act 1&rsquo;s receipt above is the proof. It is <strong>not</strong> the end of the road: from here, Act 2 gives the porch a street door &mdash; a tunnel in your own name &mdash; so it can be reached from anywhere, while the porch itself never leaves your PC.</p>'+
+  '<p class="noprint"><button class="primary" data-act="2">Begin Act 2 &mdash; The Sidewalk &rarr;</button></p></div>';
+}
+/* ============ ACT 3 — THE STREET DOOR, KEPT ============ */
+function batText(){
+  return ["@echo off",
+  "cd /d %~dp0",
+  "title Porch server - STREET DOOR (funnel) - leave this window open",
+  "echo Opening the street door to this porch...",
+  "echo When you see your address below, the porch is reachable from anywhere.",
+  "echo.",
+  "echo LEAVE THIS WINDOW OPEN. It IS the street door standing open.",
+  "echo Closing it (or answering Y to Ctrl+C) closes the street door;",
+  "echo the porch itself stays up, house-only, either way.",
+  "echo.",
+  "tailscale funnel "+RECIPE.port,
+  "echo.",
+  "echo The street door closed. The porch itself is still up.",
+  "echo To open the street door again, close this window and",
+  "echo double-click start-funnel.bat again.",
+  "pause"].join("\n");
+}
+function canClose3(){ return !!(S.act3.facts.batSaved && S.act3.facts.relightProven); }
+function refreshA3(){
+  var b = app.querySelector("[data-a3finish]");
+  if(b){ b.disabled = !canClose3(); }
+}
+function renderAct3(){
+  if(!act3Unlocked()){
+    app.innerHTML = actTabsHTML(3) +
+     '<div class="card"><p class="kicker">Act 3 &mdash; The Street Door, Kept</p><h2>Locked &mdash; the sidewalk comes first</h2>'+
+     '<p>Act 3 is daily life with a street door that exists. Its tab unlocks when <strong>Act 2&rsquo;s street test passes</strong> &mdash; the board answering from the street, on mobile data. There is nothing to keep before there is a door.</p>'+
+     '<p class="noprint"><button class="primary" data-act="2">Go to Act 2 &mdash; The Sidewalk</button></p></div>';
+    window.scrollTo(0,0);
+    return;
+  }
+  var f = S.act3.facts;
+  var h = actTabsHTML(3);
+  h += '<div class="card"><p class="kicker">Act 3 &mdash; The Street Door, Kept</p><h2>Living with the door</h2>'+
+  '<p>The sidewalk is proven. What remains is the smallest act of the three, and the one you will touch most: <strong>two clicks</strong> that bring the whole porch up, a window law for the door, and the calm way to read a door that looks closed.</p></div>';
+  h += '<div class="card"><h3>THE TWO CLICKS</h3>'+
+  '<p>In the server folder, two start files live beside each other:</p><ul class="tight">'+
+  '<li><strong>'+esc(RECIPE.startScript)+'</strong> &mdash; the porch itself. It was always a click; it still is.</li>'+
+  '<li><strong>start-funnel.bat</strong> &mdash; the street door. Built below, once, by your paste &mdash; after that, opening the street door is a double-click, and the Command Prompt paste of Act 2 is retired.</li></ul>'+
+  '<p>That is the whole startup, from a cold machine: <strong>click the porch, click the door.</strong> In that order &mdash; a door hung before the porch stands opens onto nothing.</p></div>';
+  h += '<div class="card"><h3>THE FILE &mdash; START-FUNNEL.BAT</h3>'+
+  '<p>The whole file, in the voice of the porch&rsquo;s own start script &mdash; plain words, and a failure that <em>waits and explains itself</em> instead of vanishing:</p>'+
+  block(null,"Notepad — the whole file",batText())+
+  '<p><strong>Save it your way:</strong> Notepad &rarr; paste the block &rarr; <strong>Save As</strong> &rarr; file name exactly <strong>start-funnel.bat</strong> &rarr; Save as type: <strong>All files</strong> (without that, Notepad quietly makes it start-funnel.bat.txt, and a .txt never opens a door) &rarr; save it <strong>in the server folder, beside '+esc(RECIPE.startScript)+'</strong>. The file&rsquo;s second line walks it home to its own folder, so it behaves no matter where it is clicked from.</p>'+
+  '<p>Read its shape once: it titles its window so future-you knows what the window IS; it runs the one funnel line; and if that line ever ends &mdash; the door closed, the service hiccuped, a Ctrl+C answered Y &mdash; the window <strong>stays and says what happened</strong>, in plain words, and waits for a key. Nothing about it restarts itself: a door that needs your approval again should ask, not spin.</p></div>';
+  h += '<div class="card"><h3>THE WINDOW LAW &mdash; FOR THE DOOR</h3><ul class="tight">'+
+  '<li>The funnel window <strong>IS</strong> the street door standing open. Leave it open.</li>'+
+  '<li>Closing it closes <strong>only</strong> the street door. The porch stays up, house-only &mdash; Act 1&rsquo;s state, unharmed.</li>'+
+  '<li>After a reboot, the porch does not resurrect its own door. Relight is the same two clicks &mdash; porch first, door second &mdash; and no command paste is ever needed again.</li>'+
+  '<li>Two windows, two lives: server window = the porch; funnel window = the door. Either can be read at a glance by its title.</li></ul></div>';
+  h += '<div class="card"><h3>READING A CLOSED DOOR &mdash; WITHOUT PANIC</h3>'+
+  '<p>Some morning the board will not answer from the street. The order of looking is the whole skill:</p><ol>'+
+  '<li><strong>The server window first.</strong> Is it open, banner standing, Public line present? The porch is the house; check the house before the street. If the window sits at &ldquo;press any key&rdquo;, the text above that line is the death certificate &mdash; read it before touching anything.</li>'+
+  '<li><strong>The funnel window second.</strong> Open and wearing its &ldquo;Available on the internet&rdquo; block? If it closed, its last words said why, and the relight is one click on start-funnel.bat.</li>'+
+  '<li><strong>The phone knock last.</strong> Only with both windows proven do you test from the street &mdash; mobile data, Wi-Fi off, the Act 2 street-test address.</li></ol>'+
+  '<p>And remember the ladder&rsquo;s old mercy: a traceback in the server window with the board still answering is <em>weather, not damage</em> &mdash; something knocked and hung up. The board answering is always the verdict.</p>'+
+  ambushLink(5,"Open Ambush 5 — the dead-server ladder")+'</div>';
+  h += '<div class="card"><h3>THE KNOCK &mdash; PROVE THE RELIGHT</h3>'+
+  '<p>Act 3 closes the way everything in this guide closes: by a knock, not a claim. The knock is a <strong>relight performed by the click file alone</strong>:</p><ol>'+
+  '<li>Close the funnel window (the street door closes; the porch stays up).</li>'+
+  '<li>Double-click <strong>start-funnel.bat</strong>.</li>'+
+  '<li>On the phone &mdash; mobile data, Wi-Fi off &mdash; open the street address. The board answers.</li></ol>'+
+  check3("batSaved",f.batSaved,"start-funnel.bat is saved in the server folder, beside "+esc(RECIPE.startScript))+
+  check3("relightProven",f.relightProven,"I closed the door and relit it with the click file alone &mdash; and the street answered again")+
+  '<p>Anything worth watching about life with the door? Write it as a watch item:</p>'+
+  '<p><textarea data-a3fact="watch3" placeholder="Example: funnel window closed by a reboot once — relight took ten seconds.">'+esc(f.watch3)+'</textarea></p>'+
+  '<p class="noprint"><button class="primary" data-a3finish="1"'+(canClose3()?"":" disabled")+'>Close Act 3 &mdash; see the whole-walk receipt</button></p>'+
+  (canClose3()? "" : '<p class="small">The button wakes when both proofs above are sworn.</p>')+'</div>';
+  app.innerHTML = h;
+  window.scrollTo(0,0);
+}
+/* ============ ACT RECEIPTS ============ */
+function pubAddrOf(x){ if(x.act2 && x.act2.facts) return x.act2.facts.pubAddr||""; if(x.act2) return x.act2.pubAddr||""; return ""; }
+function watch3Of(x){ if(x.act3 && x.act3.facts) return x.act3.facts.watch3||""; if(x.act3) return x.act3.watch3||""; return ""; }
+function act3CardHTML(x){
+  var h = '<div class="card"><p class="kicker">Act 3 &mdash; The Street Door, Kept</p><h2>ACT 3 RECEIPT &mdash; daily life with the door</h2>'+
+  '<div class="rline"><div class="rl-t">The two clicks</div>start-funnel.bat lives beside '+esc(RECIPE.startScript)+' in the server folder. The door was closed and relit by the click file alone &mdash; no command paste &mdash; and the street answered again.</div>';
+  var w3 = watch3Of(x);
+  h += '<div class="rline" style="border-color:var(--flag)"><div class="rl-t">Watch items &mdash; Act 3</div>'+(w3 && w3.trim()? esc(w3) : '<span class="small">None recorded.</span>')+'</div>';
+  return h + '</div>';
+}
+function wholeWalkHTML(x){
+  return '<div class="card"><p class="kicker">All three acts</p><h2>THE WHOLE WALK IS COMPLETE</h2>'+
+  '<p>The house is lit, the sidewalk is walked, and the street door is kept by two clicks. The porch stands on your own PC, behind its fence, reachable at '+esc(pubAddrOf(x)||"its tunnel address")+' &mdash; and it falls back to house-only the moment you close one window.</p>'+
+  '<p><em>its your server and you can reach it from anywhere &mdash; your own cloud, on your own machine, no landlord except yourself.</em></p>'+
+  '<p class="small">Keep these receipts with the server folder. On the bad morning, they are the first thing to read.</p></div>';
+}
+
+/* ============ ROUTER ============ */
+var VIEW = "home";
+function show(view, arg){
+  VIEW = view;
+  if(view==="home") renderHome();
+  else if(view==="walk"){ if(!S.started && !S.done[1]){ S.started = true; save(); } renderStage(S.finished? 12 : S.current); }
+  else if(view==="stage") renderStage(arg);
+  else if(view==="catalog") renderCatalog();
+  else if(view==="ambush") renderAmbush(arg);
+  else if(view==="unwalked") renderUnwalked();
+  else if(view==="receipt") renderReceipt();
+  else if(view==="act2") renderAct2Stage(S.act2.current||1);
+  else if(view==="act2stage") renderAct2Stage(arg);
+  else if(view==="act3") renderAct3();
+  else if(view==="past") renderPastList();
+  else if(view==="pastReceipt") renderPastReceipt(arg);
+}
+var RENDER_STAGE = [null,renderStage1,renderStage2,renderStage3,renderStage4,renderStage5,renderStage6,
+  renderStage7,renderStage8,renderStage9,renderStage10,renderStage11,renderStage12];
+function renderStage(n){
+  app.innerHTML = '<div id="stageRoot">'+ RENDER_STAGE[n]() +'</div>';
+  window.scrollTo(0,0);
+}
+/* ============ EVENTS ============ */
+document.addEventListener("click", function(ev){
+  var t = ev.target.closest("[data-nav],[data-stage],[data-ambush],[data-next],[data-copy],[data-detour],[data-flip],[data-stopwalk],[data-reset],[data-fwroute],[data-print],[data-motes],[data-buildanother],[data-pastview],[data-pastdel],[data-act],[data-a2next],[data-a2stage],[data-a3finish],[data-scheme],[data-breaker]");
+  if(!t) return;
+  if(t.hasAttribute("data-motes")){ toggleMotes(); return; }
+  if(t.hasAttribute("data-scheme")){ setScheme(t.getAttribute("data-scheme")); return; }
+  if(t.hasAttribute("data-breaker")){ toggleBreaker(); return; }
+  if(t.hasAttribute("data-act")){
+    ev.preventDefault();
+    var av = t.getAttribute("data-act");
+    if(av==="1") show("walk"); else if(av==="2") show("act2"); else show("act3");
+    return;
+  }
+  if(t.hasAttribute("data-a2stage")){
+    var a2v = +t.getAttribute("data-a2stage");
+    if(!S.act2.done[a2v] && canOpen2(a2v)) S.act2.current = a2v;
+    save(); show("act2stage", a2v);
+    return;
+  }
+  if(t.hasAttribute("data-a2next")){
+    var a2sn = +t.getAttribute("data-a2next");
+    if(canAdvance2(a2sn)){ closeStage2(a2sn); if(a2sn===6){ show("receipt"); } else { show("act2stage", a2sn+1); } }
+    return;
+  }
+  if(t.hasAttribute("data-a3finish")){
+    if(canClose3()){ S.act3.closed = true; save(); show("receipt"); }
+    return;
+  }
+  if(t.hasAttribute("data-nav")){ ev.preventDefault(); show(t.getAttribute("data-nav")); return; }
+  if(t.hasAttribute("data-ambush")){ ev.preventDefault(); show("ambush", +t.getAttribute("data-ambush")); return; }
+  if(t.hasAttribute("data-stage")){
+    var n = +t.getAttribute("data-stage");
+    /* Viewing any stage is always allowed — stages CLOSE only on their knock.
+       The walk's frontier moves only when a stage closes or an open stage is entered. */
+    if(!S.started){ S.started = true; }
+    if(!S.done[n] && canOpen(n)) S.current = n;
+    save(); show("stage", n);
+    return;
+  }
+  if(t.hasAttribute("data-next")){
+    var sn = +t.getAttribute("data-next");
+    if(canAdvance(sn)){ closeStage(sn); if(sn===12){ show("receipt"); } else { show("stage", sn+1); } }
+    return;
+  }
+  if(t.hasAttribute("data-copy")){
+    var key = t.getAttribute("data-copy"), txt = t.getAttribute("data-codetext");
+    var payload = txt ? txt : (CODES[key]||"");
+    copyToClipboard(payload, t);
+    return;
+  }
+  if(t.hasAttribute("data-detour")){ S.facts.detourDone = true; S.facts.pyAnswer = ""; save(); renderStage(1); return; }
+  if(t.hasAttribute("data-flip")){ S.facts.flipSeen = true; save(); renderStage(8); return; }
+  if(t.hasAttribute("data-stopwalk")){ S.stopped = "stage8"; save(); show("receipt"); return; }
+  if(t.hasAttribute("data-fwroute")){ S.facts.fwRoute = t.getAttribute("data-fwroute"); save(); renderStage(9); return; }
+  if(t.hasAttribute("data-print")){ window.print(); return; }
+  if(t.hasAttribute("data-buildanother")){ freshStart(); return; }
+  if(t.hasAttribute("data-pastview")){ show("pastReceipt", +t.getAttribute("data-pastview")); return; }
+  if(t.hasAttribute("data-pastdel")){
+    var di = +t.getAttribute("data-pastdel");
+    if(window.confirm("Remove this past receipt from the shelf? It is kept only here \u2014 removing it is final.")){ ARCH.splice(di,1); saveArch(); show("past"); }
+    return;
+  }
+  if(t.hasAttribute("data-reset")){
+    var rmsg = (S.finished || S.stopped)
+      ? "Start a fresh walk? This walk is finished, so its receipt first moves to Past Receipts \u2014 kept, not lost. The new walk starts completely clean."
+      : "Start over? This clears the CURRENT walk \u2014 its answers and its in-progress receipt lines \u2014 on this machine. Receipts already on the Past receipts shelf are NOT touched.";
+    if(window.confirm(rmsg)){ freshStart(); }
+    return;
+  }
+});
+document.addEventListener("change", function(ev){
+  var el = ev.target;
+  if(el.hasAttribute("data-a2knock")){
+    S.act2.facts[el.getAttribute("data-a2knock")] = el.value; save();
+    var as1 = currentA2FromDom(); if(as1) renderAct2Stage(as1);
+    return;
+  }
+  if(el.hasAttribute("data-a2check")){
+    S.act2.facts[el.getAttribute("data-a2check")] = el.checked; save();
+    var as2 = currentA2FromDom(); if(as2) refreshA2Next(as2);
+    el.closest("label.opt").classList.toggle("sel", el.checked);
+    return;
+  }
+  if(el.hasAttribute("data-a2fact")){
+    S.act2.facts[el.getAttribute("data-a2fact")] = el.value; save();
+    var as3 = currentA2FromDom(); if(as3) refreshA2Next(as3);
+    return;
+  }
+  if(el.hasAttribute("data-a3check")){
+    S.act3.facts[el.getAttribute("data-a3check")] = el.checked; save();
+    refreshA3();
+    el.closest("label.opt").classList.toggle("sel", el.checked);
+    return;
+  }
+  if(el.hasAttribute("data-a3fact")){
+    S.act3.facts[el.getAttribute("data-a3fact")] = el.value; save();
+    return;
+  }
+  if(el.hasAttribute("data-knock")){
+    var kname = el.getAttribute("data-knock");
+    S.facts[kname] = el.value;
+    if(kname==="opsAnswer" && el.value==="refused"){
+      /* A refusal proves the stage-3 attestation was mistaken: the swap never
+         truly happened. Reopen stages 3–5 honestly — their receipt lines are
+         withdrawn and the key attestations must be made again, truthfully. */
+      [3,4,5].forEach(function(x){ delete S.done[x]; delete S.receipts[x]; });
+      S.facts.keyGone = false; S.facts.keySaved = false;
+      S.current = 3;
+    }
+    save();
+    var stage = currentStageFromDom(); if(stage) renderStage(stage);
+    return;
+  }
+  if(el.hasAttribute("data-check")){
+    S.facts[el.getAttribute("data-check")] = el.checked; save();
+    var s2 = currentStageFromDom(); if(s2) refreshNext(s2);
+    el.closest("label.opt").classList.toggle("sel", el.checked);
+    return;
+  }
+  if(el.hasAttribute("data-fact")){
+    S.facts[el.getAttribute("data-fact")] = el.value; save();
+    var s3 = currentStageFromDom(); if(s3) refreshNext(s3);
+    return;
+  }
+});
+document.addEventListener("input", function(ev){
+  var el = ev.target;
+  if(el.hasAttribute("data-a2fact")){
+    var a2fn = el.getAttribute("data-a2fact");
+    S.act2.facts[a2fn] = el.value; save();
+    if(a2fn==="appUrl"){ var ao = document.getElementById("appSegOut"); if(ao) ao.innerHTML = appSegHTML(); }
+    var as4 = currentA2FromDom(); if(as4) refreshA2Next(as4);
+    return;
+  }
+  if(el.hasAttribute("data-a3fact")){
+    S.act3.facts[el.getAttribute("data-a3fact")] = el.value; save();
+    return;
+  }
+  if(el.hasAttribute("data-fact")){
+    var fname = el.getAttribute("data-fact");
+    S.facts[fname] = el.value; save();
+    if(fname==="street"){ var so = document.getElementById("streetOut"); if(so) so.innerHTML = streetOutHTML(); }
+    if(fname==="phoneIp"){ var po = document.getElementById("pingOut"); if(po) po.innerHTML = block(null,"Command Prompt or PowerShell",pingBlock()); }
+    var s = currentStageFromDom();
+    if(s) refreshNext(s);
+  }
+});
+function currentStageFromDom(){
+  var b = app.querySelector("[data-next]");
+  return b ? +b.getAttribute("data-next") : null;
+}
+function copyToClipboard(text, btn){
+  function done(){ if(btn){ var old = btn.textContent; btn.textContent = "Copied ✓"; setTimeout(function(){ btn.textContent = old; }, 1600); } }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, function(){ fallback(); });
+  } else { fallback(); }
+  function fallback(){
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta); done();
+  }
+}
+/* Hash deep links — for resume and reference: #stage-3, #ambush-5, #receipt, #unwalked, #catalog */
+function bootFromHash(){
+  var hsh = (location.hash||"").replace("#","");
+  var m;
+  if(m = hsh.match(/^stage-(\d{1,2})$/)){ var n = +m[1]; if(n>=1 && n<=12 && (canOpen(n)||n===1)){ S.started = true; if(!S.done[n]) S.current = n; save(); show("stage", n); return; } }
+  if(m = hsh.match(/^ambush-(\d)$/)){ show("ambush", +m[1]); return; }
+  if(hsh==="receipt"){ show("receipt"); return; }
+  if(hsh==="past"){ show("past"); return; }
+  if(m = hsh.match(/^past-(\d+)$/)){ var pi = +m[1]; if(ARCH[pi]){ show("pastReceipt", pi); return; } show("past"); return; }
+  if(hsh==="unwalked"){ show("unwalked"); return; }
+  if(hsh==="catalog"){ show("catalog"); return; }
+  if(m = hsh.match(/^act2-(\d)$/)){ var a2n = +m[1]; if(a2n>=1 && a2n<=6){ show("act2stage", a2n); return; } }
+  if(hsh==="act2"){ show("act2"); return; }
+  if(hsh==="act3"){ show("act3"); return; }
+  show("home");
+}
+/* ============ SPARKLE MOTES (owner option; gentle drift, never flashing) ============ */
+var motesOn = false, motesRAF = null, motesArr = [];
+try{ motesOn = localStorage.getItem("serverGuider.motes")==="1"; }catch(e){}
+function motesBtnLabel(){ var b = document.getElementById("motesBtn"); if(b) b.textContent = "Sparkle motes: " + (motesOn? "ON":"OFF"); }
+function toggleMotes(){
+  motesOn = !motesOn;
+  try{ localStorage.setItem("serverGuider.motes", motesOn? "1":"0"); }catch(e){}
+  motesBtnLabel();
+  if(motesOn) startMotes(); else stopMotes();
+}
+function startMotes(){
+  var cv = document.getElementById("motes"), ctx = cv.getContext("2d");
+  cv.width = window.innerWidth; cv.height = window.innerHeight;
+  var colors = moteColors();
+  motesArr = [];
+  for(var i=0;i<42;i++){
+    motesArr.push({ x:Math.random()*cv.width, y:Math.random()*cv.height, r:1+Math.random()*2.2,
+      c:colors[i%colors.length], ph:Math.random()*Math.PI*2, sp:0.08+Math.random()*0.22, dr:(Math.random()-0.5)*0.12 });
+  }
+  var t0 = performance.now();
+  function frame(now){
+    if(!motesOn) return;
+    var t = (now - t0)/1000;
+    ctx.clearRect(0,0,cv.width,cv.height);
+    for(var i=0;i<motesArr.length;i++){
+      var m = motesArr[i];
+      m.y -= m.sp; m.x += m.dr + Math.sin(t*0.4 + m.ph)*0.05;
+      if(m.y < -6){ m.y = cv.height + 6; m.x = Math.random()*cv.width; }
+      var a = 0.14 + 0.13*(0.5 + 0.5*Math.sin(t*0.5 + m.ph)); /* slow breathe, never a flash */
+      ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI*2);
+      ctx.fillStyle = "rgba("+m.c+","+a.toFixed(3)+")"; ctx.fill();
+    }
+    motesRAF = requestAnimationFrame(frame);
+  }
+  motesRAF = requestAnimationFrame(frame);
+}
+function stopMotes(){
+  if(motesRAF) cancelAnimationFrame(motesRAF);
+  var cv = document.getElementById("motes");
+  if(cv){ var ctx = cv.getContext("2d"); ctx && ctx.clearRect(0,0,cv.width,cv.height); }
+}
+window.addEventListener("resize", function(){ if(motesOn){ stopMotes(); startMotes(); } });
+window.addEventListener("hashchange", bootFromHash);
+/* ============ COLOUR SCHEMES (full lineup; choice persists on this machine) ============ */
+var SCHEMES = ["house","plankton","jellyfish","pond","bubble","klingon"];
+var schemeName = "house";
+try{ var _sv = localStorage.getItem("serverGuider.scheme"); if(_sv && SCHEMES.indexOf(_sv)>=0) schemeName = _sv; }catch(e){}
+function schemeBtnLabel(){
+  var bs = document.querySelectorAll("[data-scheme]");
+  for(var i=0;i<bs.length;i++){
+    var on = bs[i].getAttribute("data-scheme")===schemeName;
+    bs[i].classList.toggle("cur", on);
+    bs[i].setAttribute("aria-pressed", on? "true":"false");
+  }
+}
+function initScheme(){
+  if(schemeName!=="house") document.documentElement.setAttribute("data-scheme", schemeName);
+  schemeBtnLabel();
+}
+function setScheme(name){
+  if(SCHEMES.indexOf(name)<0) return;
+  schemeName = name;
+  if(name==="house") document.documentElement.removeAttribute("data-scheme");
+  else document.documentElement.setAttribute("data-scheme", name);
+  try{ localStorage.setItem("serverGuider.scheme", name); }catch(e){}
+  schemeBtnLabel();
+  glyphApply();
+  if(motesOn){ stopMotes(); startMotes(); }
+}
+function moteColors(){
+  var cs = getComputedStyle(document.documentElement);
+  var m1 = (cs.getPropertyValue("--mote1")||"").trim(), m2 = (cs.getPropertyValue("--mote2")||"").trim();
+  var out = [];
+  if(m1) out.push(m1); if(m2) out.push(m2);
+  return out.length? out : ["232,163,61","127,168,217"];
+}
+/* ============ KLINGON GLYPHS (a visual joke; display only) ============
+   A substitution cipher over text nodes: each Latin letter/digit is
+   swapped for a fixed Klingon-style lookalike glyph. The original text
+   of every swapped node is stashed on the node itself, so the code
+   breaker restores the exact English. Data, storage, knocks, inputs
+   and paste blocks (.block / .face / pre) are never touched; copy
+   reads from the guide's data, not from the screen. */
+var GLYPH_MAP = (function(){
+  var lower = "\u16A8\u16D2\u16CA\u16DE\u16D6\u16A0\u16B7\u16BA\u16C1\u16C3\u16B2\u16DA\u16D8\u16BE\u16DF\u16C8\u16B1\u16B3\u16CB\u16CF\u16A2\u16E6\u16D9\u16C7\u16E8\u16C9";
+  var upper = "\u16C5\u16D3\u16CC\u16D0\u16D7\u16A1\u16B8\u16BB\u16C2\u16C4\u16B4\u16DB\u16DD\u16BF\u16E0\u16C9\u16B0\u16B5\u16CD\u16D1\u16A3\u16E7\u16DC\u16CE\u16E9\u16CA";
+  var digit = "\u16D0\u16C1\u16C9\u16CF\u16D8\u16CB\u16DE\u16E6\u16BA\u16B7";
+  var m = {}, i, ch;
+  for(i=0;i<26;i++){ ch = String.fromCharCode(97+i); m[ch] = lower[i]; m[ch.toUpperCase()] = upper[i]; }
+  for(i=0;i<10;i++){ m[String(i)] = digit[i]; }
+  return m;
+})();
+var glyphsOn = false;
+try{ glyphsOn = localStorage.getItem("serverGuider.glyphs")!=="0"; }catch(e){}
+function glyphActive(){ return schemeName==="klingon" && glyphsOn; }
+function glyphSwapText(t){
+  var out = "", i, g;
+  for(i=0;i<t.length;i++){ g = GLYPH_MAP[t[i]]; out += (g!==undefined? g : t[i]); }
+  return out;
+}
+var GLYPH_SKIP = {SCRIPT:1, STYLE:1, TEXTAREA:1, INPUT:1, SELECT:1, OPTION:1, PRE:1};
+function glyphWalk(root){
+  if(!root) return;
+  var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: function(n){
+      if(!n.nodeValue || !/[A-Za-z0-9]/.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+      var el = n.parentElement;
+      while(el){
+        if(GLYPH_SKIP[el.tagName]) return NodeFilter.FILTER_REJECT;
+        if(el.classList && (el.classList.contains("block") || el.classList.contains("face"))) return NodeFilter.FILTER_REJECT;
+        el = el.parentElement;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    }});
+  var nodes = [], n;
+  while((n = w.nextNode())) nodes.push(n);
+  for(var i=0;i<nodes.length;i++){
+    var nd = nodes[i];
+    if(nd.__glyphOrig===undefined) nd.__glyphOrig = nd.nodeValue;
+    var sw = glyphSwapText(nd.__glyphOrig);
+    if(nd.nodeValue!==sw) nd.nodeValue = sw;
+  }
+}
+function glyphRestore(root){
+  if(!root) return;
+  var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  var nodes = [], n;
+  while((n = w.nextNode())) nodes.push(n);
+  for(var i=0;i<nodes.length;i++){
+    var nd = nodes[i];
+    if(nd.__glyphOrig!==undefined && nd.nodeValue!==nd.__glyphOrig) nd.nodeValue = nd.__glyphOrig;
+  }
+}
+function glyphApply(){
+  var on = glyphActive();
+  var roots = [document.querySelector("header"), document.getElementById("app"), document.querySelector("footer")];
+  for(var i=0;i<roots.length;i++){ if(!roots[i]) continue; if(on) glyphWalk(roots[i]); else glyphRestore(roots[i]); }
+  var b = document.getElementById("breakerBtn"), note = document.getElementById("glyphNote");
+  if(b) b.hidden = (schemeName!=="klingon");
+  if(note) note.hidden = (schemeName!=="klingon");
+  if(b) b.textContent = glyphsOn? "Code breaker: translate" : "Code breaker: back to glyphs";
+}
+function toggleBreaker(){
+  glyphsOn = !glyphsOn;
+  try{ localStorage.setItem("serverGuider.glyphs", glyphsOn? "1":"0"); }catch(e){}
+  glyphApply();
+}
+var glyphObs = null;
+function glyphWatch(){
+  var app = document.getElementById("app");
+  if(!app || glyphObs) return;
+  glyphObs = new MutationObserver(function(){ if(glyphActive()) glyphWalk(app); });
+  glyphObs.observe(app, {childList:true, subtree:true});
+}
+window.addEventListener("beforeprint", function(){ glyphRestore(document.body); });
+window.addEventListener("afterprint", function(){ glyphApply(); });
+
+
+/* ============ BOOT ============ */
+motesBtnLabel();
+initScheme();
+glyphWatch();
+glyphApply();
+if(motesOn) startMotes();
+bootFromHash();
+</script>
+</body>
+</html>
